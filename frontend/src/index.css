@@ -1,0 +1,125 @@
+:root {
+  --neon-green: #00ff88;
+  --bg-color: #000000;
+  --card-bg: #1a1a1a;
+  --text-color: #ffffff;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#root {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(to right, #fff, var(--neon-green));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.card {
+  background-color: var(--card-bg);
+  padding: 2rem;
+  border-radius: 12px;
+  width: 100%;
+  box-shadow: 0 4px 6px rgba(0, 255, 136, 0.1);
+  border: 1px solid #333;
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 6px 12px rgba(0, 255, 136, 0.15);
+  border-color: var(--neon-green);
+}
+
+.caption-input {
+  width: 100%;
+  background-color: #000;
+  border: 1px solid #333;
+  color: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  resize: vertical;
+  margin-bottom: 1.5rem;
+  box-sizing: border-box;
+}
+
+.caption-input:focus {
+  outline: none;
+  border-color: var(--neon-green);
+  box-shadow: 0 0 0 2px rgba(0, 255, 136, 0.2);
+}
+
+.predict-btn {
+  background-color: var(--neon-green);
+  color: #000;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.predict-btn:hover {
+  background-color: #00cc6a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 255, 136, 0.4);
+}
+
+.predict-btn:active {
+  transform: translateY(0);
+}
+
+.result-card h2 {
+  margin-top: 0;
+  font-size: 1.5rem;
+  color: #888;
+}
+
+.virality-score {
+  font-size: 4rem;
+  font-weight: bold;
+  color: var(--neon-green);
+  margin-top: 1rem;
+  text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { text-shadow: 0 0 20px rgba(0, 255, 136, 0.5); }
+  50% { text-shadow: 0 0 40px rgba(0, 255, 136, 0.8); }
+  100% { text-shadow: 0 0 20px rgba(0, 255, 136, 0.5); }
+}
