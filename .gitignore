@@ -207,3 +207,19 @@ dist/
 .env
 .env.local
 .env.*.local
+
+# Model artifacts
+*.pkl
+*.pk1
+
+# Large datasets
+data/
+*.csv
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+.env/

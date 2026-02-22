@@ -1,66 +1,107 @@
 import pandas as pd
 import numpy as np
+import logging
+import joblib
+from sklearn.preprocessing import MinMaxScaler
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
-def standardize_datasets(kaggle_df: pd.DataFrame, reddit_df: pd.DataFrame) -> pd.DataFrame:
+logger = logging.getLogger(__name__)
+analyzer = SentimentIntensityAnalyzer()
+
+def compute_raw_engagement_score(df: pd.DataFrame) -> pd.Series:
     """
-    Standardizes Kaggle historical CSVs and Reddit real-time DataFrame to universal columns:
-    'text', 'engagement_score', and 'timestamp'.
+    Computes a raw formalized engagement_score.
+    Formula: Base Engagement (Score + Comments * Weight) * Upvote Ratio Multiplier
+    We then normalize using Log transformation log(1 + x) for scalability.
     """
+    score = df.get('score', pd.Series(0, index=df.index))
+    comments = df.get('num_comments', pd.Series(0, index=df.index))
+    upvote_ratio = df.get('upvote_ratio', pd.Series(1.0, index=df.index))
     
-    # 1. Standardize Kaggle Dataset (Assuming Sentiment140 format or similar generic text/sentiment csv)
+    comment_weight = 2.0
+    raw_engagement = score + (comments * comment_weight)
+    weighted_engagement = raw_engagement * upvote_ratio
+    normalized_score = np.log1p(np.maximum(0, weighted_engagement))
+    return normalized_score
+
+def get_sentiment(text: str) -> float:
+    """Extracts compound sentiment score from text using VADER (-1 to 1)."""
+    if not isinstance(text, str) or not text.strip():
+        return 0.0
+    return analyzer.polarity_scores(text)['compound']
+
+def create_synthetic_kaggle_data(n_samples=1000) -> pd.DataFrame:
+    """Generates realistic synthentic Kaggle CSV equivalent for academic testing."""
+    logger.info(f"Generating synthetic Kaggle dataset with {n_samples} items for robust validation.")
+    import random
+    
+    scores = np.random.lognormal(mean=2.0, sigma=1.5, size=n_samples)
+    comments = np.random.lognormal(mean=1.0, sigma=1.0, size=n_samples)
+    upvote_ratios = np.random.uniform(0.6, 1.0, size=n_samples)
+    
+    vocab = ["amazing", "skibidi", "cap", "terrible", "ai", "tech", "funny", "sad", "stock", "crypto", "good", "bad", "love", "hate"]
+    
+    df = pd.DataFrame({
+        'target': np.random.choice([0, 2, 4], size=n_samples), # sentiment140 style
+        'text': [" ".join(random.choices(vocab, k=random.randint(5, 15))) for _ in range(n_samples)],
+        'date': pd.date_range(start="2024-01-01", periods=n_samples, freq="h"),
+        'score': scores.astype(int),
+        'num_comments': comments.astype(int),
+        'upvote_ratio': upvote_ratios
+    })
+    return df
+
+def standardize_datasets(kaggle_df: pd.DataFrame, reddit_df: pd.DataFrame, scaler_path: str = "scaler.pkl") -> pd.DataFrame:
+    """
+    Standardizes datasets to universal columns: 'text', 'engagement_score', 'sentiment_polarity', and 'timestamp'.
+    Introduces 'Virality Index' (0-100) using MinMaxScaler.
+    """
+    logger.info("Standardizing Datasets...")
+    
     kaggle_std = pd.DataFrame()
-    
-    if 'text' in kaggle_df.columns:
-        kaggle_std['text'] = kaggle_df['text']
-    elif 'tweet' in kaggle_df.columns:
-         kaggle_std['text'] = kaggle_df['tweet']
-    else:
-        # Fallback to the first string column that looks like text
-        text_cols = kaggle_df.select_dtypes(include=['object']).columns
-        if len(text_cols) > 0:
-            kaggle_std['text'] = kaggle_df[text_cols[0]]
+    if not kaggle_df.empty:
+        if 'text' in kaggle_df.columns:
+            kaggle_std['text'] = kaggle_df['text']
         else:
-            kaggle_std['text'] = ''
+            text_cols = kaggle_df.select_dtypes(include=['object']).columns
+            kaggle_std['text'] = kaggle_df[text_cols[0]] if len(text_cols) > 0 else ''
+                
+        kaggle_std['raw_score'] = compute_raw_engagement_score(kaggle_df)
+        kaggle_std['timestamp'] = pd.to_datetime(kaggle_df.get('date', pd.Timestamp.now()), errors='coerce')
             
-    # Map engagement/sentiment for Kaggle
-    if 'target' in kaggle_df.columns:
-        kaggle_std['engagement_score'] = kaggle_df['target']
-    elif 'sentiment' in kaggle_df.columns:
-        kaggle_std['engagement_score'] = kaggle_df['sentiment']
-    else:
-        kaggle_std['engagement_score'] = 1 # baseline
-        
-    # Map timestamp for kaggle
-    if 'date' in kaggle_df.columns:
-        kaggle_std['timestamp'] = pd.to_datetime(kaggle_df['date'], errors='coerce')
-    else:
-        kaggle_std['timestamp'] = pd.Timestamp.now()
-        
-    # 2. Standardize Reddit Dataset
     reddit_std = pd.DataFrame()
-    
     if not reddit_df.empty:
         reddit_std['text'] = reddit_df['title']
-        
-        # Combine score and comments as a basic engagement_score metric
-        # simple heuristic: score + (comments * 2)
-        reddit_std['engagement_score'] = reddit_df['score'] + (reddit_df['num_comments'] * 2)
-        
+        reddit_std['raw_score'] = compute_raw_engagement_score(reddit_df)
         reddit_std['timestamp'] = pd.to_datetime(reddit_df['created_utc'], unit='s', errors='coerce')
     
-    # 3. Concatenate and clean
     hybrid_df = pd.concat([kaggle_std, reddit_std], ignore_index=True)
     
-    # Clean up missed texts
+    if hybrid_df.empty:
+        logger.warning("Hybrid DF is empty after concat.")
+        return hybrid_df
+        
     hybrid_df.dropna(subset=['text'], inplace=True)
-    
-    # Ensure text is string
     hybrid_df['text'] = hybrid_df['text'].astype(str)
     
-    # Fill missing timestamps
+    logger.info("Extracting true sentiment using VADER...")
+    hybrid_df['sentiment_polarity'] = hybrid_df['text'].apply(get_sentiment)
+    
     hybrid_df['timestamp'] = hybrid_df['timestamp'].fillna(pd.Timestamp.now())
+    hybrid_df['raw_score'] = hybrid_df['raw_score'].fillna(0)
     
-    # Fill missing engagement with median or 0
-    hybrid_df['engagement_score'] = hybrid_df['engagement_score'].fillna(0)
+    # --- VIRALITY INDEX (0 - 100) ---
+    logger.info("Scaling to formal Virality Index (0-100)...")
+    scaler = MinMaxScaler(feature_range=(0, 100))
+    # Reshape for sklearn
+    raw_scores = hybrid_df['raw_score'].values.reshape(-1, 1)
+    hybrid_df['engagement_score'] = scaler.fit_transform(raw_scores).flatten()
     
+    logger.info(f"Saving Scaler to {scaler_path}...")
+    joblib.dump(scaler, scaler_path)
+    
+    # Drop intermediate raw_score
+    hybrid_df.drop(columns=['raw_score'], inplace=True)
+    
+    logger.info(f"Standardization complete. Output shape: {hybrid_df.shape}")
     return hybrid_df
