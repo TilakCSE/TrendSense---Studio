@@ -46,7 +46,8 @@ server_err.txt
 .cursorindexingignore
 *.pkl
 *.pk1
-data/
+data/raw/
+data/.env
 *.csv
 
 # --- Database ---
