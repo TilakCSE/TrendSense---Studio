@@ -3,6 +3,7 @@ import numpy as np
 import logging
 import time
 from fastapi import FastAPI, HTTPException, status
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
@@ -117,14 +118,18 @@ def predict_virality(request: PredictRequest):
     Ingests raw social media post text, extracts advanced Temporal+NLP features,
     and infers the Virality Index and Top 3 Influencers without model retraining.
     """
+    start_time = time.time()
+    
     if ml_engine["model_artifact"] is None or ml_engine["scaler"] is None:
-        raise HTTPException(
+        logger.error("Predict endpoint called but ML Engine is not initialized.")
+        return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="ML Model or Scaler not loaded in memory. Server misconfigured."
+            content={"error": "ML Model or Scaler not loaded in memory. Server misconfigured."}
         )
         
     text = request.post_text
-    logger.info(f"Incoming prediction request for text len: {len(text)}")
+    model_version = ml_engine["model_artifact"].get("model_type", "Unknown")
+    logger.info(f"Incoming prediction request | Length: {len(text)} chars | Model: {model_version}")
     
     try:
         # We need the formal engineered feature vector expected by the artifact
@@ -165,7 +170,10 @@ def predict_virality(request: PredictRequest):
         # 4. Neural Explainability Wrapper
         raw_pred_list, explanations = predict_with_explainability(ml_engine["model_artifact"], inference_df)
         raw_score = raw_pred_list[0]
-        top_feats = explanations[0] # List of tuples [(feat_name, weight), ...]
+        
+        # Ensure we don't return null features and strictly sort descending by absolute importance
+        top_feats = explanations[0] if explanations else [] 
+        top_feats = sorted(top_feats, key=lambda x: abs(x[1]), reverse=True)
         
         # 5. Dashboard MinMax Scaling
         # Scikit expects 2D array for transform
@@ -175,6 +183,9 @@ def predict_virality(request: PredictRequest):
         # Constrain 0-100 logically for dashboard UI bounds
         virality_index = min(max(virality_index, 0.0), 100.0)
         
+        inference_duration_ms = (time.time() - start_time) * 1000
+        logger.info(f"Success | Score: {virality_index:.2f} | Latency: {inference_duration_ms:.2f}ms")
+        
         return PredictResponse(
             virality_index=round(virality_index, 2),
             sentiment_score=round(sentiment_score, 4),
@@ -182,8 +193,8 @@ def predict_virality(request: PredictRequest):
         )
         
     except Exception as e:
-        logger.error(f"Prediction failed: {e}", exc_info=True)
-        raise HTTPException(
+        logger.error(f"Prediction inference failed fatally: {e}", exc_info=True)
+        return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error generating inference. Check server logs."
+            content={"error": "Error processing inference logic. Please verify input data payload."}
         )
