@@ -48,6 +48,30 @@ class MongoDBClient:
         self.client.close()
         logger.info("MongoDB connection closed.")
 
+    def check_mongo_status(self) -> dict:
+        """
+        Returns the connection status and document counts for the primary collections.
+        """
+        status = {
+            "status": "disconnected",
+            "live_trends_count": 0,
+            "historical_youtube_count": 0
+        }
+        
+        try:
+            # Check connection
+            self.client.admin.command('ping')
+            status["status"] = "connected"
+            
+            # Get document counts
+            status["live_trends_count"] = self.db["live_trends"].count_documents({})
+            status["historical_youtube_count"] = self.db["historical_youtube"].count_documents({})
+            
+        except Exception as e:
+            logger.error(f"Health check failed: {e}")
+            
+        return status
+
 def get_db():
     """Helper function to get the database instance."""
     return MongoDBClient().db
