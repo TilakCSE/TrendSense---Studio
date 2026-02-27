@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, constr
+from pydantic import BaseModel, Field, constr, field_validator
 from typing import List, Tuple
 
 class PredictRequest(BaseModel):
@@ -6,11 +6,18 @@ class PredictRequest(BaseModel):
     Input schema for the Virality Engine prediction endpoint.
     Forces string input, prevents empty strings, max length 2000 chars.
     """
-    post_text: constr(min_length=1, max_length=2000) = Field(
+    post_text: constr(max_length=2000) = Field(
         ..., 
         description="The social media text/caption to evaluate.",
         example="AI is taking over tech! What a crazy time to be alive no cap."
     )
+
+    @field_validator("post_text")
+    def validate_non_empty(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("Input text cannot be empty or solely whitespace.")
+        return stripped
 
 class PredictResponse(BaseModel):
     """
