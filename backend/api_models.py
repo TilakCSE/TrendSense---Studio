@@ -39,3 +39,11 @@ class PredictResponse(BaseModel):
 class HealthResponse(BaseModel):
     """Basic health check response."""
     status: str = "ok"
+
+class ModelInfoResponse(BaseModel):
+    """Output schema for model metadata registry details."""
+    model_version: str
+    trained_at: str
+    validation_r2: float
+    dataset_size: int
+    feature_count: int

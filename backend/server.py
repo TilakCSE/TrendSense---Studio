@@ -12,7 +12,7 @@ from model_trainer import load_virality_model, predict_with_explainability, cont
 from data_standardizer import get_sentiment
 from reddit_fetcher import fetch_daily_reddit_trends
 from slang_extractor import extract_trending_slang
-from api_models import PredictRequest, PredictResponse, HealthResponse
+from api_models import PredictRequest, PredictResponse, HealthResponse, ModelInfoResponse
 
 # Structured backend logging
 logging.basicConfig(
@@ -24,6 +24,7 @@ logger = logging.getLogger("TrendSenseAPI")
 # Global Application State for Cold-Start caching
 ml_engine = {
     "model_artifact": None,
+    "model_meta": None,
     "scaler": None,
     "trending_slang_cache": [],
     "last_slang_fetch": 0
@@ -33,26 +34,27 @@ ml_engine = {
 async def lifespan(app: FastAPI):
     """
     Startup sequence: Load the heavyweight ML artifacts precisely ONE time into memory.
-    Prevents inference latency from reloading disk on every prediction.
+    Reads from the versioned `models/model_registry.json`.
     """
     logger.info("Starting up TrendSense AI Backend Engine...")
     
-    # Load Model Artifact
-    artifact = load_virality_model("virality_model.pkl")
+    # Load Model Artifact actively from registry
+    artifact, meta = load_virality_model("models")
     if not artifact:
-        logger.error("Failed to load virality_model.pkl! Application may fail on /predict.")
+        logger.error("Failed to load active model from registry! /predict will be disabled.")
     else:
         ml_engine["model_artifact"] = artifact
-        logger.info(f"Globally mounted Model Artifact: {artifact.get('model_type', 'Unknown')}")
+        ml_engine["model_meta"] = meta
+        logger.info(f"Globally mounted Model Artifact Version: {meta.get('version', 'Unknown')} | R2: {meta.get('validation_r2', 'Unknown')}")
         
     # Load Scaler
     import joblib
     try:
-        scaler = joblib.load("scaler.pkl")
+        scaler = joblib.load("models/scaler.pkl")
         ml_engine["scaler"] = scaler
-        logger.info("Globally mounted scaler.pkl for Virality Index bounds.")
+        logger.info("Globally mounted models/scaler.pkl for Virality Index bounds.")
     except Exception as e:
-        logger.error(f"Failed to load scaler.pkl: {e}")
+        logger.error(f"Failed to load models/scaler.pkl: {e}")
         
     # Prime the Reddit Trending Slang Cache
     _refresh_trending_slang(force=True)
@@ -101,6 +103,21 @@ def _refresh_trending_slang(force: bool = False):
 def health_check():
     """Simple endpoint to verify the API server is up and routing."""
     return HealthResponse(status="ok")
+
+@app.get("/model-info", response_model=ModelInfoResponse)
+def get_model_info():
+    """Returns the metadata of the currently active model version mounted in memory."""
+    meta = ml_engine.get("model_meta")
+    if not meta:
+        raise HTTPException(status_code=503, detail="No active model metadata available.")
+        
+    return ModelInfoResponse(
+        model_version=meta.get("version", "Unknown"),
+        trained_at=meta.get("trained_at", "Unknown"),
+        validation_r2=meta.get("validation_r2", 0.0),
+        dataset_size=meta.get("dataset_size", 0),
+        feature_count=meta.get("feature_count", 0)
+    )
 
 @app.get("/live-trends")
 def get_live_trends():

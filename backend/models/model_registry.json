@@ -1,0 +1,52 @@
+{
+    "active_model": "virality_model_v3.pkl",
+    "models": [
+        {
+            "version": "v1",
+            "filename": "virality_model_v1.pkl",
+            "trained_at": "2026-02-28 00:11:35",
+            "validation_r2": 0.1055,
+            "dataset_size": 2075,
+            "feature_count": 7,
+            "features_used": [
+                "contains_trending_slang",
+                "keyword_density",
+                "text_length",
+                "hour_of_day",
+                "day_of_week",
+                "is_weekend",
+                "sentiment_polarity"
+            ]
+        },
+        {
+            "version": "v2",
+            "filename": "virality_model_v2.pkl",
+            "trained_at": "2026-02-28 00:24:19",
+            "validation_r2": 0.0071,
+            "dataset_size": 5000,
+            "feature_count": 5,
+            "features_used": [
+                "text_length",
+                "hour_of_day",
+                "day_of_week",
+                "is_weekend",
+                "sentiment_polarity"
+            ]
+        },
+        {
+            "version": "v3",
+            "filename": "virality_model_v3.pkl",
+            "trained_at": "2026-02-28 00:24:20",
+            "validation_r2": 0.0076,
+            "dataset_size": 5000,
+            "feature_count": 5,
+            "features_used": [
+                "text_length",
+                "hour_of_day",
+                "day_of_week",
+                "is_weekend",
+                "sentiment_polarity"
+            ]
+        }
+    ]
+}

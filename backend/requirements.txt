@@ -8,3 +8,4 @@ vaderSentiment
 fastapi
 uvicorn
 pydantic
+pymongo
