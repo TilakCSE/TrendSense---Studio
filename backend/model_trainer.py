@@ -2,6 +2,9 @@ import pandas as pd
 import numpy as np
 import logging
 import joblib
+import json
+import os
+from datetime import datetime
 from sklearn.model_selection import train_test_split, KFold
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
@@ -30,35 +33,33 @@ def calc_keyword_density(text: str, slang_list: list) -> float:
     count = sum(1 for w in words if any(slang in w for slang in slang_list))
     return count / len(words)
 
-def train_virality_model(hybrid_df: pd.DataFrame, trending_slang_list: list, model_path: str = "virality_model.pkl"):
+def train_virality_model(youtube_df: pd.DataFrame, models_dir: str = "models"):
     """
     Trains and compares multiple regression models to predict formal `engagement_score`.
-    Selects the best performing model based on R2 and saves it.
+    Selects the best performing model based on R2 and saves it sequentially via a JSON registry.
+    This version trains strictly on Historical YouTube Trending Data.
     """
-    logger.info(f"Training Model Engine with Hybrid Dataset size: {len(hybrid_df)}...")
+    logger.info(f"Training Model Engine with YouTube Dataset size: {len(youtube_df)}...")
     
-    if hybrid_df.empty:
+    if youtube_df.empty:
         raise ValueError("Cannot train model on empty DataFrame.")
         
-    df = hybrid_df.copy()
+    df = youtube_df.copy()
     
     # --- 1. FEATURE ENGINEERING ---
     logger.info("Extracting engineered features (NLP + Temporal)...")
     
-    df['contains_trending_slang'] = df['text'].apply(lambda x: contains_slang(x, trending_slang_list))
-    df['keyword_density'] = df['text'].apply(lambda x: calc_keyword_density(x, trending_slang_list))
     df['text_length'] = df['text'].str.len().fillna(0)
     df['hour_of_day'] = df['timestamp'].dt.hour
     df['day_of_week'] = df['timestamp'].dt.dayofweek
     df['is_weekend'] = df['day_of_week'].isin([5, 6]).astype(int)
     
-    # Sentiment polarity is now real from standardizer, verify it exists
+    # Sentiment polarity is now real from standardizer
     if 'sentiment_polarity' not in df.columns:
         df['sentiment_polarity'] = 0.0
         
     features = [
-        'contains_trending_slang', 'keyword_density', 'text_length', 
-        'hour_of_day', 'day_of_week', 'is_weekend', 'sentiment_polarity'
+        'text_length', 'hour_of_day', 'day_of_week', 'is_weekend', 'sentiment_polarity'
     ]
     
     X = df[features]
@@ -103,21 +104,70 @@ def train_virality_model(hybrid_df: pd.DataFrame, trending_slang_list: list, mod
         for feat, imp in sorted(zip(features, importance), key=lambda x: x[1], reverse=True):
             logger.info(f"  {feat}: {imp:.4f}")
             
-    # --- 3. PERSIST MODEL AND FEATURE LIST ---
-    logger.info(f"Saving best model to {model_path}...")
+    # --- 3. PERSIST MODEL INTO VERSION REGISTRY ---
+    os.makedirs(models_dir, exist_ok=True)
+    registry_path = os.path.join(models_dir, "model_registry.json")
+    
+    registry = {"active_model": None, "models": []}
+    if os.path.exists(registry_path):
+        try:
+            with open(registry_path, "r") as f:
+                registry = json.load(f)
+        except Exception as e:
+            logger.warning(f"Failed to load registry {e}, recreating.")
+            
+    next_v = len(registry["models"]) + 1
+    version_str = f"v{next_v}"
+    model_filename = f"virality_model_{version_str}.pkl"
+    model_path = os.path.join(models_dir, model_filename)
+    
+    logger.info(f"Saving best model to {model_path} as version {version_str}...")
     joblib.dump({"model": best_model, "features": features, "model_type": best_model_name}, model_path)
+    
+    new_entry = {
+        "version": version_str,
+        "filename": model_filename,
+        "trained_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "validation_r2": round(best_r2, 4),
+        "dataset_size": len(youtube_df),
+        "feature_count": len(features),
+        "features_used": features
+    }
+    registry["models"].append(new_entry)
+    registry["active_model"] = model_filename
+    
+    with open(registry_path, "w") as f:
+        json.dump(registry, f, indent=4)
+        
+    logger.info(f"Updated Registry with heavily tracked active model: {model_filename}")
     
     return best_model, results[best_model_name]["RMSE"], best_r2
 
-def load_virality_model(model_path: str = "virality_model.pkl"):
-    """Safely load an existing model artifact."""
+def load_virality_model(models_dir: str = "models"):
+    """Reads registry to load the active model artifact natively without hardcodes."""
+    registry_path = os.path.join(models_dir, "model_registry.json")
+    if not os.path.exists(registry_path):
+        logger.warning("No model registry found. Cannot mount ML engine.")
+        return None, None
+        
     try:
+        with open(registry_path, "r") as f:
+            registry = json.load(f)
+            
+        active_filename = registry.get("active_model")
+        if not active_filename:
+            return None, None
+            
+        model_path = os.path.join(models_dir, active_filename)
         artifact = joblib.load(model_path)
-        logger.info(f"Successfully loaded existing model artifact from {model_path}")
-        return artifact
-    except FileNotFoundError:
-        logger.warning(f"No existing model found at {model_path}")
-        return None
+        
+        # Pull metadata subset strictly
+        model_meta = next((m for m in registry["models"] if m["filename"] == active_filename), None)
+        logger.info(f"Successfully loaded {active_filename} from logical JSON registry.")
+        return artifact, model_meta
+    except Exception as e:
+        logger.warning(f"Failed to load existing model artifact from json registry config: {e}")
+        return None, None
 
 def predict_with_explainability(artifact, input_df: pd.DataFrame):
     """
