@@ -19,12 +19,16 @@ def standardize_youtube_chunk(chunk: pd.DataFrame, country_code: str = "Unknown"
     # 1. Rename columns
     rename_map = {
         'title': 'text',
-        'publish_time': 'timestamp'
+        'publish_time': 'timestamp',
+        'publish_date': 'timestamp'
     }
     chunk = chunk.rename(columns=rename_map)
     
-    # 2. Convert timestamp
-    chunk['timestamp'] = pd.to_datetime(chunk['timestamp'], errors='coerce')
+    # 2. Convert or create timestamp
+    if 'timestamp' in chunk.columns:
+        chunk['timestamp'] = pd.to_datetime(chunk['timestamp'], errors='coerce')
+    else:
+        chunk['timestamp'] = pd.Timestamp.now(tz="UTC")
     
     # 3. Calculate Engagement Score
     # Using log1p (log(1+x)) for numerical stability
