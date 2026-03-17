@@ -1,52 +1,33 @@
 {
-    "active_model": "virality_model_v3.pkl",
+    "active_model": "virality_model_v2.pkl",
     "models": [
         {
             "version": "v1",
             "filename": "virality_model_v1.pkl",
-            "trained_at": "2026-02-28 00:11:35",
-            "validation_r2": 0.1055,
-            "dataset_size": 2075,
-            "feature_count": 7,
-            "features_used": [
-                "contains_trending_slang",
-                "keyword_density",
-                "text_length",
-                "hour_of_day",
-                "day_of_week",
-                "is_weekend",
-                "sentiment_polarity"
-            ]
+            "trained_at": "2026-03-18 00:46:46",
+            "cv_r2": 0.4036,
+            "test_r2": 0.3919,
+            "test_rmse": 22.3684,
+            "dataset_size": 4884,
+            "feature_count": 18,
+            "text_topics": 10,
+            "engineered_features": 8,
+            "model_algorithm": "RandomForest",
+            "best_params": {}
         },
         {
             "version": "v2",
             "filename": "virality_model_v2.pkl",
-            "trained_at": "2026-02-28 00:24:19",
-            "validation_r2": 0.0071,
-            "dataset_size": 5000,
-            "feature_count": 5,
-            "features_used": [
-                "text_length",
-                "hour_of_day",
-                "day_of_week",
-                "is_weekend",
-                "sentiment_polarity"
-            ]
-        },
-        {
-            "version": "v3",
-            "filename": "virality_model_v3.pkl",
-            "trained_at": "2026-02-28 00:24:20",
-            "validation_r2": 0.0076,
-            "dataset_size": 5000,
-            "feature_count": 5,
-            "features_used": [
-                "text_length",
-                "hour_of_day",
-                "day_of_week",
-                "is_weekend",
-                "sentiment_polarity"
-            ]
+            "trained_at": "2026-03-18 00:56:37",
+            "cv_r2": 0.5906,
+            "test_r2": 0.6255,
+            "test_rmse": 17.9054,
+            "dataset_size": 1891,
+            "feature_count": 18,
+            "text_topics": 10,
+            "engineered_features": 8,
+            "model_algorithm": "RandomForest",
+            "best_params": {}
         }
     ]
 }
