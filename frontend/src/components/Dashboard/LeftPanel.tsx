@@ -1,14 +1,23 @@
 import React from 'react'
-import { Send, Twitter, Shield } from 'lucide-react'
+import { Send, Twitter, Shield, Clock } from 'lucide-react'
 
 interface LeftPanelProps {
     caption: string
     setCaption: (val: string) => void
+    simulatedHour: number
+    setSimulatedHour: (val: number) => void
     onPredict: () => void
     isPredicting: boolean
 }
 
-const LeftPanel: React.FC<LeftPanelProps> = ({ caption, setCaption, onPredict, isPredicting }) => {
+const LeftPanel: React.FC<LeftPanelProps> = ({
+    caption,
+    setCaption,
+    simulatedHour,
+    setSimulatedHour,
+    onPredict,
+    isPredicting
+}) => {
     return (
         <div className="w-full lg:w-[400px] flex flex-col gap-6 p-6 glass-card rounded-2xl relative z-10 transition-all duration-500 hover:border-neon-green/30">
             <div className="flex items-center gap-3 mb-2">
@@ -36,6 +45,48 @@ const LeftPanel: React.FC<LeftPanelProps> = ({ caption, setCaption, onPredict, i
                         <option>Reddit (r/technology)</option>
                         <option>LinkedIn (B2B SaaS)</option>
                     </select>
+                </div>
+
+                {/* Simulated Hour Slider */}
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                        <label className="text-xs uppercase tracking-widest text-white/40 font-bold flex items-center gap-2">
+                            <Clock className="w-3 h-3" />
+                            Simulated Hour
+                        </label>
+                        <span className="text-sm font-mono-custom text-neon-green font-bold">
+                            {simulatedHour.toString().padStart(2, '0')}:00
+                        </span>
+                    </div>
+                    <div className="relative">
+                        <input
+                            type="range"
+                            min="0"
+                            max="23"
+                            value={simulatedHour}
+                            onChange={(e) => setSimulatedHour(Number(e.target.value))}
+                            className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer
+                                     [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4
+                                     [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-neon-green
+                                     [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(0,255,136,0.5)]
+                                     [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-all
+                                     [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full
+                                     [&::-moz-range-thumb]:bg-neon-green [&::-moz-range-thumb]:border-0
+                                     [&::-moz-range-thumb]:shadow-[0_0_10px_rgba(0,255,136,0.5)]
+                                     [&::-moz-range-thumb]:cursor-pointer"
+                            style={{
+                                background: `linear-gradient(to right, #00FF88 0%, #00FF88 ${(simulatedHour / 23) * 100}%, rgba(255,255,255,0.1) ${(simulatedHour / 23) * 100}%, rgba(255,255,255,0.1) 100%)`
+                            }}
+                        />
+                        {/* Hour markers */}
+                        <div className="flex justify-between mt-1 text-[9px] text-white/20 font-mono-custom px-0.5">
+                            <span>00</span>
+                            <span>06</span>
+                            <span>12</span>
+                            <span>18</span>
+                            <span>23</span>
+                        </div>
+                    </div>
                 </div>
 
                 <button

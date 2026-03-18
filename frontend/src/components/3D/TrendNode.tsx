@@ -40,6 +40,12 @@ export function TrendNode({ isPredicting, ...props }: TrendNodeProps) {
         }
     })
 
+    // Safety check: Ensure all required nodes and materials exist
+    if (!nodes?.NeonCore || !nodes?.GlassShell || !nodes?.DataRings) {
+        console.warn('TrendNode: Missing geometry nodes in GLTF model')
+        return null
+    }
+
     return (
         <group ref={groupRef} {...props} dispose={null}>
             <RigidBody
@@ -56,7 +62,7 @@ export function TrendNode({ isPredicting, ...props }: TrendNodeProps) {
                     <meshStandardMaterial
                         {...materials.Mat_NeonCore}
                         emissive="#00FF88"
-                        emissiveIntensity={isPredicting ? 5 : 1.5}
+                        emissiveIntensity={Math.max(isPredicting ? 5 : 1.5, 0.0001)}
                     />
                 </mesh>
 
@@ -68,8 +74,8 @@ export function TrendNode({ isPredicting, ...props }: TrendNodeProps) {
                     <meshPhysicalMaterial
                         roughness={0}
                         transmission={1}
-                        thickness={0.5}
-                        envMapIntensity={1}
+                        thickness={Math.max(0.5, 0.0001)}
+                        envMapIntensity={Math.max(1, 0.0001)}
                         transparent
                         opacity={0.3}
                     />
@@ -85,7 +91,7 @@ export function TrendNode({ isPredicting, ...props }: TrendNodeProps) {
                     <meshStandardMaterial
                         {...materials.Mat_DataRings}
                         emissive="#00FF88"
-                        emissiveIntensity={isPredicting ? 8 : 2}
+                        emissiveIntensity={Math.max(isPredicting ? 8 : 2, 0.0001)}
                     />
                 </mesh>
             </RigidBody>
