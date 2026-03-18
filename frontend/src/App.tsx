@@ -6,18 +6,13 @@ import { TrendNode } from './components/3D/TrendNode'
 import TopBar from './components/Dashboard/TopBar'
 import LeftPanel from './components/Dashboard/LeftPanel'
 import RightPanel from './components/Dashboard/RightPanel'
+import { usePrediction } from './hooks/usePrediction'
 
 function App() {
-  // --- Mock State (API Contract) ---
-  const [isPredicting, setIsPredicting] = useState(false)
-  const [showResults, setShowResults] = useState(false)
+  // --- Real API Integration ---
+  const { status, data, predict } = usePrediction()
   const [caption, setCaption] = useState('')
-
-  const [predictionData, setPredictionData] = useState({
-    viralityIndex: 0,
-    sentimentScore: 0,
-    topFeatures: [] as string[],
-  })
+  const [simulatedHour, setSimulatedHour] = useState(12) // Default to noon
 
   const [liveTrends] = useState([
     '🔥 Trending now: #skibidi',
@@ -29,29 +24,13 @@ function App() {
     '#AIContent'
   ])
 
-  // --- Predict Simulation Logic ---
-  const handlePredict = () => {
-    setIsPredicting(true)
-    setShowResults(false)
-
-    // Simulate 2-second loading state
-    setTimeout(() => {
-      const mockResult = {
-        viralityIndex: Math.floor(Math.random() * 51) + 50, // 50-100
-        sentimentScore: Number((Math.random() * 2 - 1).toFixed(2)), // -1 to 1
-        topFeatures: [
-          'High keyword density in first sentence',
-          'Optimal weekend posting window',
-          'Sentiment aligns with current tech trends',
-          'Visual hook detected in structured text'
-        ],
-      }
-
-      setPredictionData(mockResult)
-      setIsPredicting(false)
-      setShowResults(true)
-    }, 2000)
+  // --- Real API Predict Handler ---
+  const handlePredict = async () => {
+    await predict(caption, simulatedHour)
   }
+
+  const isPredicting = status === 'loading'
+  const showResults = status === 'success' && data !== null
 
   return (
     <div className="relative w-full h-screen bg-[#030303] overflow-hidden text-white">
@@ -96,13 +75,25 @@ function App() {
         <LeftPanel
           caption={caption}
           setCaption={setCaption}
+          simulatedHour={simulatedHour}
+          setSimulatedHour={setSimulatedHour}
           isPredicting={isPredicting}
           onPredict={handlePredict}
         />
 
         <RightPanel
           isVisible={showResults}
-          data={predictionData}
+          data={data ? {
+            viralityIndex: data.virality_index,
+            sentimentScore: data.sentiment_score,
+            topFeatures: data.top_features,
+            aiSuggestion: data.ai_suggestion
+          } : {
+            viralityIndex: 0,
+            sentimentScore: 0,
+            topFeatures: [],
+            aiSuggestion: ''
+          }}
         />
       </main>
 

@@ -1,5 +1,9 @@
 import { useState, useCallback } from 'react';
-import type { PredictResponse, PredictionState } from '@/types';
+import type {
+  BackendPredictRequest,
+  BackendPredictResponse,
+  PredictionState
+} from '@/types/prediction';
 import { apiConfig } from '@/config';
 
 export function usePrediction() {
@@ -9,8 +13,8 @@ export function usePrediction() {
     error: null,
   });
 
-  const predict = useCallback(async (content: string): Promise<void> => {
-    if (!content.trim()) {
+  const predict = useCallback(async (postText: string, simulatedHour?: number): Promise<void> => {
+    if (!postText.trim()) {
       setState({
         status: 'error',
         data: null,
@@ -29,12 +33,17 @@ export function usePrediction() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), apiConfig.timeout);
 
+      const payload: BackendPredictRequest = {
+        post_text: postText,
+        ...(simulatedHour !== undefined && { simulated_hour: simulatedHour }),
+      };
+
       const response = await fetch(apiConfig.endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify(payload),
         signal: controller.signal,
       });
 
@@ -44,10 +53,15 @@ export function usePrediction() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data: PredictResponse = await response.json();
+      const data: BackendPredictResponse = await response.json();
 
-      // Validate response data
-      if (typeof data.score !== 'number' || !data.sentiment) {
+      // Validate response data matches FastAPI contract
+      if (
+        typeof data.virality_index !== 'number' ||
+        typeof data.sentiment_score !== 'number' ||
+        !Array.isArray(data.top_features) ||
+        typeof data.ai_suggestion !== 'string'
+      ) {
         throw new Error('Invalid response format from server');
       }
 
@@ -65,7 +79,7 @@ export function usePrediction() {
           errorMessage = 'Request timed out. Please try again.';
           errorCode = 'TIMEOUT_ERROR';
         } else if (error.message.includes('Failed to fetch')) {
-          errorMessage = 'Cannot connect to prediction server. Please ensure the API is running.';
+          errorMessage = 'Cannot connect to prediction server. Please ensure the API is running at http://localhost:8000';
           errorCode = 'CONNECTION_ERROR';
         } else {
           errorMessage = error.message;

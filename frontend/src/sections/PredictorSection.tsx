@@ -7,7 +7,7 @@ import { Brain, Sparkles } from 'lucide-react';
 
 export function PredictorSection() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { status, data, error, predict } = usePrediction();
+  const { status, data, predict } = usePrediction();
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -88,10 +88,10 @@ export function PredictorSection() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <InputPanel 
+            <InputPanel
               onSubmit={predict}
               isLoading={status === 'loading'}
-              error={error}
+              error={null}
             />
           </motion.div>
 

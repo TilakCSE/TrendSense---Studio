@@ -5,11 +5,19 @@ import { SentimentIndicator } from '@/components/ui/SentimentIndicator';
 import { CircularProgress } from '@/components/ui/CircularProgress';
 import { resultsConfig } from '@/config';
 import { Activity, BarChart3, Zap } from 'lucide-react';
-import type { PredictResponse, LoadingState } from '@/types';
+import type { BackendPredictResponse, PredictionStatus } from '@/types/prediction';
+import type { SentimentType } from '@/types';
 
 interface ResultsPanelProps {
-  data: PredictResponse | null;
-  status: LoadingState;
+  data: BackendPredictResponse | null;
+  status: PredictionStatus;
+}
+
+// Helper function to map sentiment_score (-1 to 1) to SentimentType
+function mapSentimentScore(score: number): SentimentType {
+  if (score > 0.3) return 'Positive';
+  if (score < -0.3) return 'Negative';
+  return 'Neutral';
 }
 
 export function ResultsPanel({ data, status }: ResultsPanelProps) {
@@ -157,17 +165,17 @@ export function ResultsPanel({ data, status }: ResultsPanelProps) {
                 >
                   {resultsConfig.scoreLabel}
                 </motion.span>
-                
+
                 <div className="flex items-center gap-8">
                   {/* Circular Progress */}
-                  <CircularProgress 
-                    value={data.score} 
-                    size={160} 
+                  <CircularProgress
+                    value={data.virality_index}
+                    size={160}
                     strokeWidth={10}
                   />
-                  
+
                   {/* Large Score Display */}
-                  <ScoreDisplay score={data.score} size="md" />
+                  <ScoreDisplay score={data.virality_index} size="md" />
                 </div>
               </div>
 
@@ -189,9 +197,9 @@ export function ResultsPanel({ data, status }: ResultsPanelProps) {
                 >
                   {resultsConfig.sentimentLabel}
                 </motion.span>
-                
-                <SentimentIndicator 
-                  sentiment={data.sentiment} 
+
+                <SentimentIndicator
+                  sentiment={mapSentimentScore(data.sentiment_score)}
                   size="lg"
                   showLabel
                 />
@@ -209,13 +217,13 @@ export function ResultsPanel({ data, status }: ResultsPanelProps) {
                   <span className="text-sm font-medium text-white/70">AI Insight</span>
                 </div>
                 <p className="text-sm text-white/50">
-                  {data.score >= 80 
+                  {data.ai_suggestion || (data.virality_index >= 80
                     ? 'Exceptional viral potential! This content has all the markers of high engagement.'
-                    : data.score >= 60
+                    : data.virality_index >= 60
                     ? 'Strong viral potential. Consider optimizing your hook for better reach.'
-                    : data.score >= 40
+                    : data.virality_index >= 40
                     ? 'Moderate potential. Adding emotional triggers could improve performance.'
-                    : 'Low viral potential. Consider revising your approach for better engagement.'}
+                    : 'Low viral potential. Consider revising your approach for better engagement.')}
                 </p>
               </motion.div>
             </motion.div>
