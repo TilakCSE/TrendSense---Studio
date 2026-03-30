@@ -1,5 +1,5 @@
 {
-    "active_model": "virality_model_v2.pkl",
+    "active_model": "virality_model_v10.pkl",
     "models": [
         {
             "version": "v1",
@@ -28,6 +28,138 @@
             "engineered_features": 8,
             "model_algorithm": "RandomForest",
             "best_params": {}
+        },
+        {
+            "version": "v3",
+            "filename": "virality_model_v3.pkl",
+            "trained_at": "2026-03-18 19:34:56",
+            "cv_r2": 0.6055,
+            "test_r2": 0.6471,
+            "test_rmse": 17.4349,
+            "dataset_size": 1938,
+            "feature_count": 18,
+            "text_topics": 10,
+            "engineered_features": 8,
+            "model_algorithm": "GradientBoosting",
+            "best_params": {
+                "learning_rate": 0.03,
+                "max_depth": 5,
+                "min_samples_split": 10
+            }
+        },
+        {
+            "version": "v4",
+            "filename": "virality_model_v4.pkl",
+            "trained_at": "2026-03-19 13:11:42",
+            "cv_r2": 0.5838,
+            "test_r2": 0.5704,
+            "test_rmse": 18.0064,
+            "dataset_size": 2387,
+            "feature_count": 18,
+            "text_topics": 10,
+            "engineered_features": 8,
+            "model_algorithm": "GradientBoosting",
+            "best_params": {
+                "learning_rate": 0.03,
+                "max_depth": 5,
+                "min_samples_split": 10
+            }
+        },
+        {
+            "version": "v5",
+            "filename": "virality_model_v5.pkl",
+            "trained_at": "2026-03-21 13:11:46",
+            "cv_r2": 0.5903,
+            "test_r2": 0.5578,
+            "test_rmse": 19.2351,
+            "dataset_size": 2479,
+            "feature_count": 18,
+            "text_topics": 10,
+            "engineered_features": 8,
+            "model_algorithm": "RandomForest",
+            "best_params": {}
+        },
+        {
+            "version": "v6",
+            "filename": "virality_model_v6.pkl",
+            "trained_at": "2026-03-22 13:12:21",
+            "cv_r2": 0.5812,
+            "test_r2": 0.5861,
+            "test_rmse": 18.38,
+            "dataset_size": 2570,
+            "feature_count": 18,
+            "text_topics": 10,
+            "engineered_features": 8,
+            "model_algorithm": "RandomForest",
+            "best_params": {}
+        },
+        {
+            "version": "v7",
+            "filename": "virality_model_v7.pkl",
+            "trained_at": "2026-03-23 13:11:55",
+            "cv_r2": 0.5762,
+            "test_r2": 0.5602,
+            "test_rmse": 18.8677,
+            "dataset_size": 2661,
+            "feature_count": 18,
+            "text_topics": 10,
+            "engineered_features": 8,
+            "model_algorithm": "RandomForest",
+            "best_params": {}
+        },
+        {
+            "version": "v8",
+            "filename": "virality_model_v8.pkl",
+            "trained_at": "2026-03-26 13:12:20",
+            "cv_r2": 0.574,
+            "test_r2": 0.5278,
+            "test_rmse": 19.2486,
+            "dataset_size": 2753,
+            "feature_count": 18,
+            "text_topics": 10,
+            "engineered_features": 8,
+            "model_algorithm": "GradientBoosting",
+            "best_params": {
+                "learning_rate": 0.03,
+                "max_depth": 5,
+                "min_samples_split": 5
+            }
+        },
+        {
+            "version": "v9",
+            "filename": "virality_model_v9.pkl",
+            "trained_at": "2026-03-27 13:11:59",
+            "cv_r2": 0.5605,
+            "test_r2": 0.5262,
+            "test_rmse": 19.9885,
+            "dataset_size": 2843,
+            "feature_count": 18,
+            "text_topics": 10,
+            "engineered_features": 8,
+            "model_algorithm": "GradientBoosting",
+            "best_params": {
+                "learning_rate": 0.03,
+                "max_depth": 5,
+                "min_samples_split": 10
+            }
+        },
+        {
+            "version": "v10",
+            "filename": "virality_model_v10.pkl",
+            "trained_at": "2026-03-28 13:11:58",
+            "cv_r2": 0.546,
+            "test_r2": 0.5585,
+            "test_rmse": 19.2352,
+            "dataset_size": 2937,
+            "feature_count": 18,
+            "text_topics": 10,
+            "engineered_features": 8,
+            "model_algorithm": "GradientBoosting",
+            "best_params": {
+                "learning_rate": 0.03,
+                "max_depth": 5,
+                "min_samples_split": 10
+            }
         }
     ]
 }
