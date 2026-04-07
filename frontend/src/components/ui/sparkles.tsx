@@ -16,7 +16,7 @@ interface SparklesProps {
   color?: string;
   background?: string;
   options?: Record<string, any>;
-  direction?: string; // FIXED: Added this missing property!
+  direction?: string; // 🔥 CRITICAL FIX: This stops the TS Error in the Pricing Page
 }
 
 export function Sparkles({
@@ -32,6 +32,7 @@ export function Sparkles({
   color = "#FFFFFF",
   background = "transparent",
   options = {},
+  direction = "none",
 }: SparklesProps) {
   const [isReady, setIsReady] = useState(false);
 
@@ -53,7 +54,7 @@ export function Sparkles({
       color: { value: color },
       move: {
         enable: true,
-        direction: "none" as const,
+        direction: direction as any, // Passed to engine
         speed: { min: minSpeed || speed / 10, max: speed },
         straight: false,
       },

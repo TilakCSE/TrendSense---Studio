@@ -1,352 +1,195 @@
 "use client";
-import { useState, useCallback } from "react";
-import { motion, AnimatePresence, Variants } from "framer-motion";
-import { Loader2, AlertCircle, TrendingUp, MessageSquare, Lightbulb, BarChart3, Command as CommandIcon } from "lucide-react";
-import { usePrediction } from "@/hooks/usePrediction";
-import { useIsMounted } from "@/hooks/useIsMounted";
-import { extractKeywords } from "@/lib/analyzer";
-import { CommandMenu } from "@/components/CommandMenu";
-import { FrostedCore } from "@/components/3D/FrostedCore";
 
-// ---------------------------------------------------------------------------
-// Helpers & Animation Variants
-// ---------------------------------------------------------------------------
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { usePrediction } from "@/hooks/usePrediction"; // Using the hook you provided
+import { extractKeywords } from "@/lib/analyzer"; // Using the analyzer you provided
+import Link from "next/link";
+import { 
+  ArrowLeft, Activity, Sparkles, BrainCircuit, 
+  BarChart3, Loader2, Send 
+} from "lucide-react";
 
-function sentimentLabel(score: number): { label: string; color: string } {
-  if (score > 0.1) return { label: "Positive", color: "text-emerald-400" };
-  if (score < -0.1) return { label: "Negative", color: "text-red-400" };
-  return { label: "Neutral", color: "text-amber-400" };
-}
-
-const WEIGHT_COLOR: Record<string, string> = {
-  high: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
-  medium: "bg-zinc-700/50 text-zinc-300 border-zinc-600/40",
-  low: "bg-zinc-800/50 text-zinc-500 border-zinc-700/30",
-};
-
-// Orchestrates the "cascade" effect for the list items
-const listContainerVariants: Variants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15, 
-      delayChildren: 0.4,    
-    },
-  },
-};
-
-// The spring animation for the progress bars
-const barVariants: Variants = {
-  hidden: { width: 0, opacity: 0 },
-  show: (targetWidth: number) => ({
-    width: `${targetWidth}%`,
-    opacity: 1,
-    transition: {
-      type: "spring",
-      stiffness: 60,
-      damping: 15,
-      mass: 1,
-    },
-  }),
-};
-
-const textFadeVariants: Variants = {
-  hidden: { opacity: 0, x: -10 },
-  show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: "easeOut" } },
-};
-
-// ---------------------------------------------------------------------------
-// Page Component
-// ---------------------------------------------------------------------------
-
-export default function Dashboard() {
+export default function DashboardPage() {
   const [postText, setPostText] = useState("");
-  const { status, data, error, predict, reset } = usePrediction();
-  const isMounted = useIsMounted();
+  const { status, data, error, predict } = usePrediction();
 
-  const handlePredict = useCallback(() => {
+  const handlePredict = () => {
+    if (!postText.trim()) return;
     predict(postText);
-  }, [predict, postText]);
+  };
 
-  const handleClear = useCallback(() => {
-    setPostText("");
-    reset();
-  }, [reset]);
-
-  const keywords = data ? extractKeywords(data.top_features) : [];
-  const sentiment = data ? sentimentLabel(data.sentiment_score) : null;
+  const keywords = data?.top_features ? extractKeywords(data.top_features) : [];
 
   return (
-    <>
-      <CommandMenu onPredict={handlePredict} onClear={handleClear} />
+    <main className="min-h-screen bg-green-bean text-mashed-potatoes selection:bg-cranberry font-body flex flex-col">
+      
+      {/* Dashboard Top Nav */}
+      <nav className="w-full flex items-center justify-between px-6 py-4 border-b border-artichoke/20 bg-green-bean/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="flex items-center gap-4">
+          <Link href="/" className="text-artichoke hover:text-mashed-potatoes transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <span className="font-heading text-xl tracking-wide">TrendSense<span className="text-cranberry">.</span></span>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="w-2 h-2 rounded-full bg-cranberry animate-pulse" />
+          <span className="text-xs uppercase tracking-widest text-artichoke">Engine Online</span>
+        </div>
+      </nav>
 
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 pt-10">
+      <div className="flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
         
-        {/* LEFT COLUMN: Input */}
-        <section className="lg:col-span-5 flex flex-col gap-6">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-white tracking-tight leading-tight">
-              Intelligence Engine.
-            </h1>
-            <p className="text-sm text-zinc-500 max-w-xs leading-relaxed">
-              Draft your content. The neural oracle simulates market resonance
-              in real time.
-            </p>
-          </div>
-
-          <div className="relative group">
-            <div className="absolute inset-0 rounded-xl border border-white/[0.06] group-focus-within:border-cyan-500/30 transition-colors duration-300 pointer-events-none" />
+        {/* LEFT COLUMN: Input Terminal */}
+        <section className="flex flex-col h-full mt-4">
+          <h1 className="font-heading text-4xl mb-2">Input <span className="italic text-artichoke">Signal</span></h1>
+          <p className="text-artichoke mb-8 text-sm uppercase tracking-widest">Feed the neural net your draft.</p>
+          
+          <div className="relative flex-1 min-h-[400px] flex flex-col rounded-2xl bg-black/20 border border-artichoke/20 overflow-hidden group focus-within:border-cranberry/50 transition-colors duration-500">
             <textarea
               value={postText}
               onChange={(e) => setPostText(e.target.value)}
-              placeholder="Type your content here…"
-              maxLength={500}
-              disabled={status === "loading"}
-              className="w-full h-56 px-4 pt-4 pb-10 bg-[#09090B] rounded-xl text-sm text-zinc-200 placeholder:text-zinc-700 font-mono resize-none outline-none disabled:opacity-50 transition-opacity"
+              placeholder="Type your social copy here..."
+              className="flex-1 w-full bg-transparent resize-none p-6 text-lg outline-none placeholder:text-artichoke/50"
             />
-            <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between pointer-events-none">
-              <span className="text-[10px] font-mono text-zinc-700 uppercase tracking-widest">
-                {postText.length}/500 chars
+            
+            <div className="p-4 bg-black/40 border-t border-artichoke/20 flex items-center justify-between">
+              <span className="text-xs text-artichoke font-mono">
+                {postText.length} chars
               </span>
-              <span className="text-[10px] font-mono text-zinc-700 flex items-center gap-1">
-                <CommandIcon className="w-2.5 h-2.5" />K to predict
-              </span>
+              <button
+                onClick={handlePredict}
+                disabled={status === "loading" || !postText.trim()}
+                className="flex items-center gap-2 px-6 py-3 bg-mashed-potatoes text-green-bean rounded-md font-semibold uppercase tracking-wider text-sm hover:bg-cranberry hover:text-mashed-potatoes transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-mashed-potatoes disabled:hover:text-green-bean"
+              >
+                {status === "loading" ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    Run Engine
+                  </>
+                )}
+              </button>
             </div>
           </div>
 
-          {isMounted && (
-            <button
-              onClick={handlePredict}
-              disabled={status === "loading" || !postText.trim()}
-              className="relative h-10 w-full rounded-lg border border-white/10 bg-white/5 px-4 text-[13px] font-mono text-zinc-300 uppercase tracking-widest hover:bg-white/10 hover:border-white/20 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 flex items-center justify-center gap-2 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]"
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+              className="mt-4 p-4 rounded-lg bg-cabernet/50 border border-cabernet text-mashed-potatoes flex items-start gap-3"
             >
-              {status === "loading" ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  Analyzing…
-                </>
-              ) : (
-                "Run Prediction"
-              )}
-            </button>
+              <Activity className="w-5 h-5 text-cranberry shrink-0" />
+              <div>
+                <p className="font-semibold text-sm">Prediction Failed</p>
+                <p className="text-xs opacity-80">{error.message}</p>
+              </div>
+            </motion.div>
           )}
-
-          <AnimatePresence>
-            {status === "error" && error && (
-              <motion.div
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="flex items-start gap-3 p-3 rounded-lg border border-red-500/20 bg-red-500/5 text-red-400"
-              >
-                <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <p className="text-xs font-mono leading-relaxed">{error.message}</p>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </section>
 
-        {/* RIGHT COLUMN: Results */}
-        <section className="lg:col-span-7">
-          <AnimatePresence mode="wait">
-            
-            {/* IDLE STATE */}
-            {status === "idle" && (
-              <motion.div
-                key="idle"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="rounded-xl border border-white/5 bg-[#09090B] min-h-[400px] flex flex-col items-center justify-center gap-3"
-              >
-                <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center">
-                  <BarChart3 className="w-4 h-4 text-zinc-700" />
-                </div>
-                <p className="text-[11px] font-mono text-zinc-700 uppercase tracking-[0.2em]">
-                  Awaiting Neural Flux…
-                </p>
-              </motion.div>
-            )}
+        {/* RIGHT COLUMN: Output Telemetry */}
+        <section className="flex flex-col h-full mt-4">
+           <h2 className="font-heading text-4xl mb-2 text-artichoke opacity-50">Telemetry <span className="italic">Output</span></h2>
+           <p className="text-artichoke mb-8 text-sm uppercase tracking-widest opacity-50">Awaiting processing...</p>
 
-            {/* LOADING STATE */}
-            {status === "loading" && (
-              <motion.div
-                key="loading"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="space-y-3"
-              >
-                <div className="rounded-xl border border-white/5 bg-[#09090B] min-h-[200px] flex flex-col items-center justify-center gap-4">
+           <AnimatePresence mode="wait">
+             {status === "idle" && (
+                <motion.div 
+                  key="idle"
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="flex-1 rounded-2xl border border-dashed border-artichoke/30 flex items-center justify-center text-artichoke/50 flex-col gap-4"
+                >
+                  <Activity className="w-12 h-12 mb-2 opacity-20" />
+                  <p className="font-mono text-sm uppercase">Standing by for raw data.</p>
+                </motion.div>
+             )}
+
+             {status === "loading" && (
+                <motion.div 
+                  key="loading"
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="flex-1 rounded-2xl border border-artichoke/20 bg-black/10 flex items-center justify-center flex-col gap-6"
+                >
                   <div className="relative">
-                    <div className="w-10 h-10 rounded-full border border-cyan-500/30 animate-ping absolute inset-0" />
-                    <div className="w-10 h-10 rounded-full border border-cyan-500/60 flex items-center justify-center relative">
-                      <Loader2 className="w-4 h-4 text-cyan-500 animate-spin" />
-                    </div>
+                    <div className="w-16 h-16 border-4 border-artichoke/20 rounded-full" />
+                    <div className="w-16 h-16 border-4 border-cranberry rounded-full border-t-transparent animate-spin absolute top-0 left-0" />
                   </div>
-                  <p className="text-[11px] font-mono text-zinc-600 uppercase tracking-widest">
-                    Running inference…
-                  </p>
-                </div>
+                  <p className="font-mono text-sm uppercase text-artichoke tracking-widest animate-pulse">Running Neural Net...</p>
+                </motion.div>
+             )}
 
-                <div className="rounded-xl border border-white/[0.06] bg-[#09090B] p-6">
-                  <div className="flex items-center gap-2 text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-3">
-                    <Lightbulb className="w-3 h-3" />
-                    Oracle Advice
-                  </div>
-                  <motion.div
-                    animate={{ opacity: [0.3, 1, 0.3] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                    className="flex items-center gap-2 text-sm text-zinc-600 font-mono"
-                  >
-                    Consulting archives…
-                  </motion.div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* SUCCESS STATE */}
-            {status === "success" && data && (
-              <motion.div
-                key="success"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                className="space-y-4"
-              >
-                {/* 3D Frosted Glass Core */}
-                {isMounted && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
-                    className="rounded-xl border border-white/[0.06] bg-[#09090B] overflow-hidden relative"
-                  >
-                    <div className="absolute top-4 left-4 z-10">
-                      <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
-                        Neural Core — Virality Modulation
-                      </p>
-                    </div>
-                    <FrostedCore viralityIndex={data.virality_index} className="w-full h-[280px]" />
-                  </motion.div>
-                )}
-
-                {/* Metrics Card */}
-                <div className="rounded-xl border border-white/[0.06] bg-[#09090B] overflow-hidden">
-                  
-                  {/* Top metrics bar */}
-                  <div className="grid grid-cols-2 divide-x divide-white/[0.06] border-b border-white/[0.06]">
-                    
-                    {/* Virality Score */}
-                    <div className="p-6 flex flex-col gap-1">
-                      <div className="flex items-center gap-2 text-[10px] font-mono text-zinc-600 uppercase tracking-widest">
-                        <TrendingUp className="w-3 h-3" />
-                        Virality Index
+             {status === "success" && data && (
+                <motion.div 
+                  key="success"
+                  initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ staggerChildren: 0.1 }}
+                  className="flex flex-col gap-6"
+                >
+                  {/* Score Grid */}
+                  <div className="grid grid-cols-2 gap-6">
+                    <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-black/30 rounded-2xl p-6 border border-artichoke/20 relative overflow-hidden">
+                      <div className="text-artichoke text-xs uppercase tracking-widest mb-4 flex items-center gap-2"><BarChart3 className="w-4 h-4"/> Virality Index</div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="font-heading text-7xl text-mashed-potatoes">{data.virality_index}</span>
+                        <span className="text-cranberry text-xl font-bold">/100</span>
                       </div>
-                      <div className="flex items-baseline gap-1 mt-1">
-                        <span className="text-4xl font-bold text-white tabular-nums">
-                          {Math.round(data.virality_index)}
-                        </span>
-                        <span className="text-sm text-zinc-600 font-mono">/100</span>
-                      </div>
-                      <div className="mt-2 h-[2px] w-full rounded-full bg-white/5 overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${data.virality_index}%` }}
-                          transition={{ type: "spring", stiffness: 50, damping: 20, delay: 0.2 }}
-                          className="h-full bg-gradient-to-r from-cyan-500 to-cyan-300"
+                      <div className="w-full h-1.5 bg-black/50 rounded-full mt-6 overflow-hidden">
+                        <motion.div 
+                          initial={{ width: 0 }} animate={{ width: `${data.virality_index}%` }} transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
+                          className="h-full bg-cranberry"
                         />
                       </div>
-                    </div>
+                    </motion.div>
 
-                    {/* Sentiment */}
-                    <div className="p-6 flex flex-col gap-1">
-                      <div className="flex items-center gap-2 text-[10px] font-mono text-zinc-600 uppercase tracking-widest">
-                        <MessageSquare className="w-3 h-3" />
-                        Sentiment
-                      </div>
-                      <div className="mt-1 flex items-baseline gap-2">
-                        <span className={`text-3xl font-bold tabular-nums ${sentiment?.color}`}>
-                          {data.sentiment_score > 0 ? "+" : ""}
-                          {data.sentiment_score.toFixed(2)}
+                    <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-black/30 rounded-2xl p-6 border border-artichoke/20">
+                      <div className="text-artichoke text-xs uppercase tracking-widest mb-4">Sentiment Score</div>
+                      <div className="flex flex-col justify-center h-full pb-4">
+                        <span className="font-heading text-4xl capitalize text-mashed-potatoes">
+                          {data.sentiment_score > 0.2 ? "Positive" : data.sentiment_score < -0.2 ? "Negative" : "Neutral"}
                         </span>
+                        <span className="text-artichoke font-mono mt-2">Valence: {data.sentiment_score.toFixed(2)}</span>
                       </div>
-                      <span className={`text-xs font-mono mt-1 ${sentiment?.color}`}>
-                        {sentiment?.label}
-                      </span>
-                    </div>
+                    </motion.div>
                   </div>
 
-                  {/* Signal Features — Animated cascade */}
-                  {keywords.length > 0 && (
-                    <div className="p-6 border-b border-white/[0.06]">
-                      <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-4">
-                        Signal Features
-                      </p>
-                      
-                      <motion.div 
-                        variants={listContainerVariants}
-                        initial="hidden"
-                        animate="show"
-                        className="space-y-4"
-                      >
-                        {keywords.map((kw, idx) => {
-                          const maxScore = Math.max(...keywords.map((k) => k.score));
-                          const percentage = (kw.score / maxScore) * 100;
-
-                          return (
-                            <div key={kw.keyword} className="space-y-2">
-                              <motion.div variants={textFadeVariants} className="flex items-center justify-between">
-                                <span className={`text-[11px] font-mono ${WEIGHT_COLOR[kw.weight].split(' ')[1]}`}>
-                                  {kw.keyword.replace(/_/g, " ")}
-                                </span>
-                                <span className="text-[10px] font-mono text-zinc-600 tabular-nums">
-                                  {kw.score.toFixed(2)}
-                                </span>
-                              </motion.div>
-                              
-                              <div className="h-[2px] w-full bg-white/5 overflow-hidden">
-                                <motion.div
-                                  custom={percentage}
-                                  variants={barVariants}
-                                  className={`h-full ${
-                                    kw.weight === "high" ? "bg-cyan-500" :
-                                    kw.weight === "medium" ? "bg-zinc-500" :
-                                    "bg-zinc-700"
-                                  }`}
-                                />
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </motion.div>
+                  {/* Keywords */}
+                  <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-black/30 rounded-2xl p-6 border border-artichoke/20">
+                    <div className="text-artichoke text-xs uppercase tracking-widest mb-4">Influence Vectors</div>
+                    <div className="flex flex-wrap gap-2">
+                      {keywords.map((kw, idx) => (
+                        <span 
+                          key={idx} 
+                          className={`px-4 py-2 rounded-full text-sm flex items-center gap-2 border ${
+                            kw.weight === 'high' ? 'bg-cranberry/20 border-cranberry text-cranberry' : 
+                            kw.weight === 'medium' ? 'bg-artichoke/20 border-artichoke text-mashed-potatoes' : 
+                            'bg-transparent border-artichoke/30 text-artichoke'
+                          }`}
+                        >
+                          {kw.keyword}
+                          <span className="text-xs opacity-60 font-mono">{kw.score.toFixed(2)}</span>
+                        </span>
+                      ))}
                     </div>
-                  )}
+                  </motion.div>
 
-                  {/* Oracle Advice */}
-                  <div className="p-6">
-                    <div className="flex items-center gap-2 text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-3">
-                      <Lightbulb className="w-3 h-3" />
-                      Oracle Advice
+                  {/* AI Oracle Suggestion */}
+                  <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-cabernet/40 rounded-2xl p-6 border border-cranberry/40">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 rounded-lg bg-cranberry/20 text-cranberry"><BrainCircuit className="w-5 h-5" /></div>
+                      <span className="font-heading text-2xl text-mashed-potatoes flex items-center gap-2">The Oracle Says <Sparkles className="w-4 h-4 text-cranberry"/></span>
                     </div>
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.8, delay: 0.8 }}
-                      className="text-sm text-zinc-300 leading-relaxed font-mono"
-                    >
-                      {data.ai_suggestion || "AI Oracle is currently saving compute credits."}
-                    </motion.p>
-                  </div>
-                </div>
-
-              </motion.div>
-            )}
-          </AnimatePresence>
+                    <p className="text-mashed-potatoes/90 leading-relaxed text-lg">
+                      {data.ai_suggestion}
+                    </p>
+                  </motion.div>
+                </motion.div>
+             )}
+           </AnimatePresence>
         </section>
       </div>
-    </>
+    </main>
   );
 }

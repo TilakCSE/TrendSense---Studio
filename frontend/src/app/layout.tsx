@@ -1,23 +1,40 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Geist } from "next/font/google";
+import localFont from "next/font/local";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+// Assuming you download 'Paradiso' or similar from your font list
+const headingFont = localFont({
+  src: "../../public/fonts/Paradiso.otf",
+  variable: "--font-heading",
+  display: "swap",
+});
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
+const bodyFont = Inter({ 
+  subsets: ["latin"],
+  variable: "--font-body",
+});
 
 export const metadata: Metadata = {
-  title: "TrendSense | Predictive Intelligence",
-  description: "Advanced social virality forecasting",
+  title: "TrendSense | Predict the Unpredictable",
+  description: "AI-powered virality predictor for social content.",
 };
 
-// Pure global wrapper. NO sidebar here.
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <html lang="en" className={cn("dark scroll-smooth", "font-sans", geist.variable)}>
-      <body className={`${inter.variable} ${mono.variable} bg-[#030303] text-zinc-400 font-sans antialiased min-h-screen flex flex-col selection:bg-cyan-500/30`}>
+    <html lang="en" className="scroll-smooth">
+      <body
+        className={cn(
+          "min-h-screen bg-mashed-potatoes text-mulled-wine font-body antialiased selection:bg-cranberry selection:text-mashed-potatoes",
+          headingFont.variable,
+          bodyFont.variable
+        )}
+      >
         {children}
       </body>
     </html>
