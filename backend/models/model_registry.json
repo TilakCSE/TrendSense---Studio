@@ -1,5 +1,5 @@
 {
-    "active_model": "virality_model_v10.pkl",
+    "active_model": "virality_model_v18.pkl",
     "models": [
         {
             "version": "v1",
@@ -160,6 +160,125 @@
                 "max_depth": 5,
                 "min_samples_split": 10
             }
+        },
+        {
+            "version": "v11",
+            "filename": "virality_model_v11.pkl",
+            "trained_at": "2026-04-08 13:12:05",
+            "cv_r2": 0.396,
+            "test_r2": 0.4014,
+            "test_rmse": 21.8649,
+            "dataset_size": 4845,
+            "feature_count": 18,
+            "text_topics": 10,
+            "engineered_features": 8,
+            "model_algorithm": "GradientBoosting",
+            "best_params": {
+                "learning_rate": 0.03,
+                "max_depth": 5,
+                "min_samples_split": 5
+            }
+        },
+        {
+            "version": "v12",
+            "filename": "virality_model_v12.pkl",
+            "trained_at": "2026-04-10 14:17:41",
+            "cv_r2": 0.4036,
+            "test_r2": 0.4212,
+            "test_rmse": 21.9895,
+            "dataset_size": 4855,
+            "feature_count": 18,
+            "text_topics": 10,
+            "engineered_features": 8,
+            "model_algorithm": "GradientBoosting",
+            "best_params": {
+                "learning_rate": 0.03,
+                "max_depth": 5,
+                "min_samples_split": 5
+            }
+        },
+        {
+            "version": "v13",
+            "filename": "virality_model_v13.pkl",
+            "trained_at": "2026-04-11 13:12:03",
+            "cv_r2": 0.3961,
+            "test_r2": 0.3971,
+            "test_rmse": 22.7944,
+            "dataset_size": 4949,
+            "feature_count": 18,
+            "text_topics": 10,
+            "engineered_features": 8,
+            "model_algorithm": "GradientBoosting",
+            "best_params": {
+                "learning_rate": 0.03,
+                "max_depth": 5,
+                "min_samples_split": 10
+            }
+        },
+        {
+            "version": "v14",
+            "filename": "virality_model_v14.pkl",
+            "trained_at": "2026-04-13 11:40:53",
+            "cv_r2": 0.388,
+            "test_r2": 0.4335,
+            "test_rmse": 21.9636,
+            "dataset_size": 4949,
+            "feature_count": 18,
+            "text_topics": 10,
+            "engineered_features": 8,
+            "model_algorithm": "GradientBoosting",
+            "best_params": {
+                "learning_rate": 0.03,
+                "max_depth": 5,
+                "min_samples_split": 10
+            }
+        },
+        {
+            "version": "v15",
+            "filename": "virality_model_v15.pkl",
+            "trained_at": "2026-04-14 13:42:01",
+            "cv_r2": 0.3815,
+            "test_r2": 0.3916,
+            "test_rmse": 22.4655,
+            "dataset_size": 5128,
+            "feature_count": 18,
+            "text_topics": 10,
+            "engineered_features": 8,
+            "model_algorithm": "GradientBoosting",
+            "best_params": {
+                "learning_rate": 0.03,
+                "max_depth": 5,
+                "min_samples_split": 10
+            }
+        },
+        {
+            "version": "v16",
+            "filename": "virality_model_v16.pkl",
+            "trained_at": "2026-04-15 14:22:41",
+            "cv_r2": 0.3633,
+            "test_r2": 0.4007,
+            "test_rmse": 22.3575,
+            "dataset_size": 5128,
+            "feature_count": 18,
+            "text_topics": 10,
+            "engineered_features": 8,
+            "model_algorithm": "RandomForest",
+            "best_params": {}
+        },
+        {
+            "version": "v17",
+            "filename": "virality_model_v17.pkl",
+            "trained_at": "2026-04-16 00:45:04",
+            "cv_r2": 0.6174,
+            "test_r2": 0.3752,
+            "test_rmse": 22.8036,
+            "dataset_size": 219012,
+            "feature_count": 22,
+            "text_topics": 15,
+            "engineered_features": 7,
+            "model_algorithm": "RandomForest",
+            "vectorizer": "HashingVectorizer(n_features=65536)",
+            "training_source": "cleaned_trends.parquet"
         }
     ]
 }

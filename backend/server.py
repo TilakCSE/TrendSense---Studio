@@ -130,17 +130,18 @@ async def lifespan(app: FastAPI):
     Startup sequence: Load the heavyweight ML artifacts precisely ONE time into memory.
     Uses STABILITY GUARD: Loads model with highest validation_r2 > 0.15, else falls back to v5.
     """
-    logger.info("Starting up TrendSense AI Backend Engine...")
+    logger.info("[TrendSense Core] Booting Startup Sequence...")
 
     # Load Model Artifact with stability guard
     artifact, meta = load_best_stable_model(MODEL_DIR, min_r2=0.15, fallback_version="v5")
     if not artifact:
-        logger.error("Failed to load active model from registry! /predict will be disabled.")
+        logger.error("[TrendSense Core] Failed to load active model from registry! /predict will be disabled.")
     else:
         ml_engine["model_artifact"] = artifact
         ml_engine["model_meta"] = meta
-        logger.info(f"✅ Globally mounted Model Artifact Version: {meta.get('version', 'Unknown')} | R2: {meta.get('validation_r2', 'Unknown')}")
-        logger.info(f"✅ Model now predicts percentiles directly (0-100), no post-prediction scaling needed")
+        r2_val = meta.get('test_r2') or meta.get('validation_r2') or meta.get('cv_r2') or 'Unknown'
+        logger.info(f"[TrendSense Core] Globally mounted Model Artifact Version: {meta.get('version', 'Unknown')} | R²: {r2_val}")
+        logger.info(f"[TrendSense Core] Prediction percentile scaling (0-100) is natively calibrated")
 
     # Initialize Gemini API Client with modern google-genai SDK
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")

@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { Zap, BrainCircuit, BarChart3, Fingerprint, Sparkles } from "lucide-react";
 
 export default function LivePreview() {
@@ -18,7 +18,7 @@ export default function LivePreview() {
       "High virality potential detected. The intersection of 'aesthetic' and 'routine' signals strong algorithmic resonance. We recommend pushing this live between 08:00 AM and 09:30 AM EST to maximize initial engagement velocity.",
   };
 
-  const containerVariants = {
+  const containerVariants : Variants = {
     hidden: { opacity: 0, y: 40 },
     visible: {
       opacity: 1,
@@ -27,7 +27,7 @@ export default function LivePreview() {
     },
   };
 
-  const itemVariants = {
+  const itemVariants : Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 80 } },
   };

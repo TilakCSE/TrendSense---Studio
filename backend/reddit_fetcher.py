@@ -20,16 +20,15 @@ def fetch_daily_reddit_trends(subreddits=None, limit=50, upload_to_mongo=True):
     if subreddits is None:
         # Vastness: 10+ subreddits covering Gen Z, tech, memes, culture, news
         subreddits = [
-            'GenZ', 'technology', 'memes', 'TikTokCringe',
-            'InstagramReality', 'popculturechat', 'Fauxmoi',
-            'whitepeopletwitter', 'worldnews', 'Damnthatsinteresting'
-        ]
+        'all', 'popular', 'AskReddit', 'funny', 
+        'InternetIsBeautiful', 'TodayILearned', 'technology', 
+        'nextfuckinglevel', 'Damnthatsinteresting', 'Entrepreneur', 'startups'
+    ]
 
     headers = {'User-Agent': 'TrendSense/2.0 by TilakChauhan'}
     posts_data = []
 
-    logger.info(f"🌐 Starting Reddit fetch for {len(subreddits)} subreddits")
-    logger.info(f"📋 Subreddits: {subreddits}")
+    logger.info(f"⚡ [Velocity Stream] Ingesting live signals from {len(subreddits)} Reddit endpoints...")
 
     for subreddit in subreddits:
         # CRITICAL: Use top.json?t=day for DAILY highest-engagement posts
@@ -53,11 +52,10 @@ def fetch_daily_reddit_trends(subreddits=None, limit=50, upload_to_mongo=True):
                     'subreddit': subreddit,
                     'platform': 'reddit'
                 })
-            logger.info(f"  ✅ r/{subreddit}: {len(children)} top daily posts fetched")
         except requests.exceptions.Timeout:
-            logger.error(f"  ❌ r/{subreddit}: Request timed out")
+            logger.debug(f"  [Velocity Stream] r/{subreddit}: Request timed out")
         except Exception as e:
-            logger.error(f"  ❌ r/{subreddit}: {e}")
+            logger.debug(f"  [Velocity Stream] r/{subreddit} Error: {e}")
 
         # AGGRESSIVE rate limiting (4 seconds) to prevent Reddit IP bans
         time.sleep(4)
@@ -75,22 +73,17 @@ def fetch_daily_reddit_trends(subreddits=None, limit=50, upload_to_mongo=True):
             (df['upvote_ratio'] * 100) * 0.1
         )
 
-        logger.info(f"\n✅ Reddit fetch complete. Total posts: {len(df)}")
-        logger.info(f"📊 Engagement stats:")
-        logger.info(f"   - Avg score: {df['score'].mean():.1f}")
-        logger.info(f"   - Avg comments: {df['comment_count'].mean():.1f}")
-        logger.info(f"   - Avg engagement: {df['engagement_score'].mean():.1f}")
+        logger.info(f"⚡ [Velocity Stream] Successfully fetched {len(df)} live social signals.")
 
         # CRITICAL: Upload to MongoDB live_trends collection
         if upload_to_mongo:
-            logger.info(f"\n📤 Uploading {len(df)} posts to MongoDB live_trends collection...")
             try:
                 append_to_mongo(df, collection_name="live_trends")
-                logger.info("✅ MongoDB upload successful!")
+                logger.info(f"⚡ [Velocity Stream] Ingested live posts and merged into MongoDB.")
             except Exception as e:
-                logger.error(f"❌ MongoDB upload failed: {e}")
+                logger.error(f"[Velocity Stream] MongoDB upload failed: {e}")
     else:
-        logger.warning("⚠️  No Reddit data fetched. All requests may have failed.")
+        logger.warning("[Velocity Stream] No Reddit data fetched. All requests may have failed.")
 
     return df
 
