@@ -83,7 +83,7 @@ export default function Testimonials() {
           {duplicatedTestimonials.map((testimonial, idx) => (
             <div 
               key={idx} 
-              className="w-[350px] md:w-[450px] shrink-0 bg-white/40 backdrop-blur-sm rounded-2xl p-8 border border-artichoke/20 hover:border-cranberry/40 hover:bg-white/60 transition-colors duration-300 group"
+              className="w-[350px] md:w-[450px] shrink-0 bg-white/70 backdrop-blur-sm rounded-2xl p-8 border border-artichoke/20 hover:border-cranberry/40 hover:bg-white/90 transition-colors duration-300 group"
             >
               <Quote className="w-8 h-8 text-cranberry/30 mb-6 group-hover:text-cranberry/60 transition-colors" />
               <p className="text-mulled-wine text-lg md:text-xl leading-relaxed font-heading mb-8">

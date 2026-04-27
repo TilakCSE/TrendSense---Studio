@@ -55,3 +55,6 @@ data/.env
 db.sqlite3
 db.sqlite3-journal
 *.parquet
+
+*.safetensors
+*.pt

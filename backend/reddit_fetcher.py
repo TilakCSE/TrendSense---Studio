@@ -13,25 +13,26 @@ logger = logging.getLogger(__name__)
 
 def fetch_daily_reddit_trends(subreddits=None, limit=50, upload_to_mongo=True):
     """
-    Fetches top daily posts from 10+ cultural subreddits.
-    Uses top.json?t=day endpoint for highest-engagement posts from last 24 hours.
+    Fetches top daily posts from high-velocity cultural subreddits.
+    Uses top.json?t=day endpoint for highest-engagement posts from the last 24 hours.
     Automatically uploads to MongoDB live_trends collection.
     """
     if subreddits is None:
-        # Vastness: 10+ subreddits covering Gen Z, tech, memes, culture, news
+        # THE UPGRADE: Highly targeted subreddits for modern internet culture & virality
         subreddits = [
-        'all', 'popular', 'AskReddit', 'funny', 
-        'InternetIsBeautiful', 'TodayILearned', 'technology', 
-        'nextfuckinglevel', 'Damnthatsinteresting', 'Entrepreneur', 'startups'
-    ]
+            'youtube', 'NewTubers', 'LivestreamFail', 'Twitch', 'youtubegaming',
+            'TikTokCringe', 'GenZ', 'dankmemes', 'MemeEconomy', 'Asmongold', 
+            'MrBeast', 'Minecraft', 'Roblox', 'FortNiteBR', 'Valorant', 
+            'streaming', 'letsplay', 'VirtualYoutubers', 'speedrun', 
+            'VideoGameAnalysis', 'HobbyDrama', 'InternetMysteries'
+        ]
 
-    headers = {'User-Agent': 'TrendSense/2.0 by TilakChauhan'}
+    headers = {'User-Agent': 'TrendSense/2.0 by TilakChauhan (Academic Project)'}
     posts_data = []
 
-    logger.info(f"⚡ [Velocity Stream] Ingesting live signals from {len(subreddits)} Reddit endpoints...")
+    logger.info(f"⚡ [Velocity Stream] Ingesting live signals from {len(subreddits)} cultural epicenters...")
 
     for subreddit in subreddits:
-        # CRITICAL: Use top.json?t=day for DAILY highest-engagement posts
         url = f"https://www.reddit.com/r/{subreddit}/top.json?t=day&limit={limit}"
         try:
             response = requests.get(url, headers=headers, timeout=10)
@@ -46,7 +47,7 @@ def fetch_daily_reddit_trends(subreddits=None, limit=50, upload_to_mongo=True):
                     'text': post.get('title', ''),  # Use title as text for standardization
                     'score': post.get('score', 0),
                     'num_comments': post.get('num_comments', 0),
-                    'comment_count': post.get('num_comments', 0),  # Alias for MongoDB schema
+                    'comment_count': post.get('num_comments', 0),  
                     'created_utc': post.get('created_utc', 0),
                     'upvote_ratio': post.get('upvote_ratio', 1.0),
                     'subreddit': subreddit,
@@ -92,12 +93,12 @@ if __name__ == "__main__":
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s'
     )
-    logger.info("=== TESTING REDDIT FETCHER WITH MONGODB UPLOAD ===")
-    test_df = fetch_daily_reddit_trends(limit=10, upload_to_mongo=True)
+    logger.info("=== TESTING UPGRADED REDDIT FETCHER ===")
+    test_df = fetch_daily_reddit_trends(limit=10, upload_to_mongo=False) # Keep False for simple test
     if not test_df.empty:
         print("\n" + "=" * 80)
-        print("SAMPLE DATA:")
+        print("SAMPLE VIRAL DATA:")
         print("=" * 80)
-        print(test_df[['title', 'score', 'comment_count', 'subreddit', 'engagement_score']].head(10))
+        print(test_df[['title', 'score', 'subreddit']].head(10))
     else:
         logger.warning("No data fetched during test.")

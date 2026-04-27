@@ -61,10 +61,10 @@ export default function LivePreview() {
           className="relative rounded-3xl bg-green-bean text-mashed-potatoes shadow-2xl shadow-green-bean/20 overflow-hidden border border-artichoke/20"
         >
           {/* Mac-style Window Controls */}
-          <div className="flex items-center gap-2 px-6 py-4 border-b border-white/10 bg-black/10">
+          <div className="flex items-center gap-2 px-6 py-4 border-b border-white/30 bg-black/30">
             <div className="w-3 h-3 rounded-full bg-cranberry/80" />
-            <div className="w-3 h-3 rounded-full bg-mashed-potatoes/30" />
-            <div className="w-3 h-3 rounded-full bg-mashed-potatoes/30" />
+            <div className="w-3 h-3 rounded-full bg-mashed-potatoes/70" />
+            <div className="w-3 h-3 rounded-full bg-mashed-potatoes/70" />
             <div className="ml-4 text-xs font-mono tracking-widest text-artichoke uppercase">
               TrendSense // Prediction Node_01
             </div>
@@ -79,7 +79,7 @@ export default function LivePreview() {
                   <Fingerprint className="w-4 h-4" />
                   Raw Input Signal
                 </label>
-                <div className="bg-black/20 rounded-xl p-5 border border-white/5">
+                <div className="bg-black/40 rounded-xl p-5 border border-white/20">
                   <p className="text-mashed-potatoes/90 leading-relaxed font-body">
                     "romanticizing my morning routine because life is too short for bad coffee and rushed mornings. ☕️✨ #aesthetic"
                   </p>
@@ -88,7 +88,7 @@ export default function LivePreview() {
 
               {/* Simulated "Run" Button */}
               <div className="mt-auto">
-                <div className="w-full py-4 rounded-lg bg-cranberry/20 border border-cranberry/50 flex items-center justify-center gap-2 text-cranberry relative overflow-hidden">
+                <div className="w-full py-4 rounded-lg bg-cranberry/50 border border-cranberry/60 flex items-center justify-center gap-2 text-cranberry relative overflow-hidden">
                   <div className="absolute inset-0 bg-cranberry/10 animate-pulse" />
                   <Zap className="w-5 h-5 relative z-10" />
                   <span className="font-semibold tracking-widest uppercase relative z-10 text-sm">
@@ -103,7 +103,7 @@ export default function LivePreview() {
               
               <div className="grid grid-cols-2 gap-6">
                 {/* Virality Score */}
-                <div className="bg-black/20 rounded-xl p-6 border border-white/5 relative overflow-hidden">
+                <div className="bg-black/40 rounded-xl p-6 border border-white/20 relative overflow-hidden">
                   <div className="absolute -right-10 -top-10 w-32 h-32 bg-cranberry/20 rounded-full blur-3xl" />
                   <div className="flex items-center gap-2 text-artichoke text-sm uppercase tracking-wider mb-2">
                     <BarChart3 className="w-4 h-4" /> Virality Index
@@ -114,7 +114,7 @@ export default function LivePreview() {
                     </span>
                     <span className="text-cranberry font-bold">/100</span>
                   </div>
-                  <div className="w-full h-1 bg-white/10 rounded-full mt-4 overflow-hidden">
+                  <div className="w-full h-1 bg-white/30 rounded-full mt-4 overflow-hidden">
                     <motion.div 
                       initial={{ width: 0 }}
                       whileInView={{ width: "88%" }}
@@ -126,7 +126,7 @@ export default function LivePreview() {
 
                 {/* Sentiment & Features */}
                 <div className="flex flex-col gap-4">
-                  <div className="bg-black/20 rounded-xl p-5 border border-white/5 flex-1">
+                  <div className="bg-black/40 rounded-xl p-5 border border-white/20 flex-1">
                     <div className="text-artichoke text-sm uppercase tracking-wider mb-2">
                       Sentiment
                     </div>
@@ -134,13 +134,13 @@ export default function LivePreview() {
                       Positive <span className="text-artichoke text-lg">({mockPrediction.sentiment_score})</span>
                     </div>
                   </div>
-                  <div className="bg-black/20 rounded-xl p-5 border border-white/5 flex-1">
+                  <div className="bg-black/40 rounded-xl p-5 border border-white/20 flex-1">
                      <div className="text-artichoke text-xs uppercase tracking-wider mb-3">
                       Influence Vectors
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {mockPrediction.top_features.map((feat) => (
-                        <span key={feat.keyword} className="px-3 py-1 rounded-full text-xs border border-artichoke/30 bg-white/5 text-mashed-potatoes">
+                        <span key={feat.keyword} className="px-3 py-1 rounded-full text-xs border border-artichoke/40 bg-white/30 text-mashed-potatoes">
                           {feat.keyword} <span className="text-artichoke ml-1">{feat.score}</span>
                         </span>
                       ))}
@@ -150,10 +150,10 @@ export default function LivePreview() {
               </div>
 
               {/* AI Oracle Suggestion */}
-              <div className="bg-cabernet/40 rounded-xl p-6 border border-cranberry/30 relative overflow-hidden">
+              <div className="bg-cabernet/70 rounded-xl p-6 border border-cranberry/50 relative overflow-hidden">
                  <div className="absolute top-0 left-0 w-1 h-full bg-cranberry" />
                  <div className="flex items-start gap-4">
-                    <div className="p-2 rounded-lg bg-cranberry/20">
+                    <div className="p-2 rounded-lg bg-cranberry/40">
                       <BrainCircuit className="w-6 h-6 text-cranberry" />
                     </div>
                     <div>

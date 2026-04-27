@@ -11,7 +11,7 @@ MODEL_DIR = os.path.join(os.path.dirname(__file__), 'models')
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'data', 'db_scripts'))
 from mongo_client import MongoDBClient
 from data_standardizer import standardize_youtube_for_training
-from model_trainer import train_virality_model
+from backend.legacy_v1.model_trainer import train_virality_model
 
 # Configure structured logging for retraining
 logging.basicConfig(

@@ -1,361 +1,295 @@
-import pandas as pd
-import numpy as np
-import logging
-import time
 import os
+import time
+import logging
+import torch
 from google import genai
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
+from pydantic import BaseModel
+import io
+from PIL import Image
+import time
+
+
+# Import our custom Deep Learning modules
+from v2_engine.multimodal_nn import TrendSenseMultiModal
+from v2_engine.text_sbert import TextEmbedder
+from v2_engine.vision_vit import VisionEmbedder
+from v2_engine.trend_discovery import LivePulseEngine
+from reddit_fetcher import fetch_daily_reddit_trends
 
 # Load environment variables
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', 'data', '.env'))
-
-# Define Base Path for Models (always loads from backend/models/)
-MODEL_DIR = os.path.join(os.path.dirname(__file__), 'models')
-
-# TrendSense Engine modules
-from model_trainer import load_best_stable_model, predict_with_explainability, contains_slang, calc_keyword_density, count_viral_keywords
-from data_standardizer import get_sentiment
-from reddit_fetcher import fetch_daily_reddit_trends
-from slang_extractor import extract_trending_slang
-from api_models import PredictRequest, PredictResponse, HealthResponse, ModelInfoResponse
 
 # Structured backend logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
-logger = logging.getLogger("TrendSenseAPI")
+logger = logging.getLogger("TrendSenseDL_API")
 
-# Global Application State for Cold-Start caching
+# --- Global Application State ---
 ml_engine = {
-    "model_artifact": None,
-    "model_meta": None,
+    "model": None,
+    "text_embedder": None,
+    "vision_embedder": None,
     "gemini_client": None,
-    "trending_slang_cache": [],
-    "last_slang_fetch": 0
+    "pulse_engine": None
 }
 
-def get_top_trending_terms(n=5):
-    """
-    Extracts top N trending TF-IDF terms from the loaded model artifact.
-    Falls back to cached Reddit slang if TF-IDF is unavailable.
-    """
-    try:
-        artifact = ml_engine.get("model_artifact")
-        if artifact and "tfidf_vectorizer" in artifact:
-            tfidf_vectorizer = artifact["tfidf_vectorizer"]
-            # Get feature names (these are the actual words/bigrams)
-            feature_names = tfidf_vectorizer.get_feature_names_out()
+pulse_cache = {
+    "data": None,
+    "last_fetched": 0.0,
+    "CACHE_TTL": 600.0 
+}
 
-            # Get the top N terms by their IDF scores (importance)
-            idf_scores = tfidf_vectorizer.idf_
-            top_indices = np.argsort(idf_scores)[:n]  # Lower IDF = more important/common
-            top_terms = [feature_names[i] for i in top_indices]
+# --- Data Validation Schemas ---
+class PredictRequest(BaseModel):
+    title: str
+    view_count: int = 0
+    like_count: int = 0
+    comment_count: int = 0
 
-            logger.debug(f"Extracted top {n} TF-IDF terms: {top_terms}")
-            return top_terms
-        else:
-            # Fallback to Reddit slang cache
-            slang_cache = ml_engine.get("trending_slang_cache", [])
-            top_terms = slang_cache[:n]
-            logger.debug(f"Using Reddit slang fallback: {top_terms}")
-            return top_terms
-    except Exception as e:
-        logger.error(f"Failed to extract trending terms: {e}")
-        return ["viral", "trending", "no cap", "fr", "lowkey"]  # Emergency fallback
+class PredictResponse(BaseModel):
+    title: str
+    virality_score: float
+    ai_suggestion: str
+    model_version: str
+    status: str
 
+# --- Gemini AI Integration ---
 def generate_ai_suggestion(user_text: str, virality_score: float):
     """
-    Calls Gemini 1.5 Flash to generate a viral content suggestion.
-    Returns an unhinged, brainrot-style hook to improve the post.
-    Uses the modern google-genai SDK.
-
-    TEMPORARILY DISABLED to save API quota during calibration.
+    Calls Gemini 1.5 Flash to generate a viral content suggestion based on the DL score.
     """
-    # TEMPORARY: Return hardcoded placeholder to save API quota
-    return "AI Oracle is in hibernation mode for calibration."
 
-    # COMMENTED OUT TO SAVE API QUOTA
-    # gemini_client = ml_engine.get("gemini_client")
-    # if not gemini_client:
-    #     return "AI suggestions unavailable (API key not configured)"
-    #
-    # try:
-    #     # Get current trending terms
-    #     top_trends = ", ".join(get_top_trending_terms(n=5))
-    #
-    #     # Build the prompt - explicit instruction for complete sentence
-    #     prompt = f"""Current internet trends: {top_trends}.
-    #
-    # User's draft post: "{user_text}"
-    #
-    # Our ML model rated this {virality_score:.0f}/100 for virality potential.
-    #
-    # Generate ONE complete, creative suggestion to make this post more viral. Use trending internet slang, humor, or "brainrot" style hooks. Return a full, grammatically complete sentence (not fragments).
-    #
-    # Your viral suggestion:"""
-    #
-    #     # Call Gemini 1.5 Flash with new SDK (using -002 model version for v1beta API)
-    #     response = gemini_client.models.generate_content(
-    #         model='gemini-flash-latest',
-    #         contents=prompt,
-    #         config={
-    #             'temperature': 1.0,  # Balanced creativity and coherence
-    #             'max_output_tokens': 100,  # Full sentence length
-    #         }
-    #     )
-    #
-    #     # Wait for full response and extract text
-    #     suggestion = response.text.strip()
-    #
-    #     # Fallback if response is too short (likely a fragment)
-    #     if len(suggestion) < 15:
-    #         logger.warning(f"Gemini returned short fragment: '{suggestion}', using fallback")
-    #         return "Try adding trending phrases like 'no cap', 'fr fr', or relevant emojis to boost engagement! 🔥"
-    #
-    #     logger.info(f"✅ Gemini suggestion generated: {suggestion[:50]}...")
-    #     return suggestion
-    #
-    # except Exception as e:
-    #     logger.error(f"Gemini API call failed: {e}", exc_info=True)
-    #     return "AI suggestion temporarily unavailable"
+    return "AI Coach is currently hibernating to save API tokens! 😴"
 
+    gemini_client = ml_engine.get("gemini_client")
+    if not gemini_client:
+        return "AI suggestions unavailable (API key not configured)"
+    
+    try:
+        # Build the prompt using the new Neural Network score
+        prompt = f"""
+User's draft video title: "{user_text}"
+Our Deep Learning Multi-Modal model rated this {virality_score:.1f}/100 for virality potential.
+
+Generate ONE complete, creative suggestion to make this title more viral. 
+Use modern internet slang or highly engaging YouTube clickbait psychology. 
+Return a full, grammatically complete sentence.
+
+Your viral suggestion:"""
+
+        # Call Gemini 1.5 Flash
+        response = gemini_client.models.generate_content(
+            model='gemini-1.5-flash-latest',
+            contents=prompt,
+            config={
+                'temperature': 0.9, 
+                'max_output_tokens': 100, 
+            }
+        )
+
+        suggestion = response.text.strip()
+        logger.info(f"✅ Gemini suggestion generated: {suggestion[:50]}...")
+        return suggestion
+
+    except Exception as e:
+        logger.error(f"Gemini API call failed: {e}", exc_info=True)
+        return "Try adding high-arousal words like 'INSANE' or 'NEW' to boost the model's prediction! 🔥"
+
+# --- Startup Sequence ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
-    Startup sequence: Load the heavyweight ML artifacts precisely ONE time into memory.
-    Uses STABILITY GUARD: Loads model with highest validation_r2 > 0.15, else falls back to v5.
+    Boot sequence: Loads PyTorch weights and SBERT into memory once.
     """
-    logger.info("[TrendSense Core] Booting Startup Sequence...")
+    logger.info("🧠 [TrendSense Core] Booting Deep Learning Sequence...")
 
-    # Load Model Artifact with stability guard
-    artifact, meta = load_best_stable_model(MODEL_DIR, min_r2=0.15, fallback_version="v5")
-    if not artifact:
-        logger.error("[TrendSense Core] Failed to load active model from registry! /predict will be disabled.")
-    else:
-        ml_engine["model_artifact"] = artifact
-        ml_engine["model_meta"] = meta
-        r2_val = meta.get('test_r2') or meta.get('validation_r2') or meta.get('cv_r2') or 'Unknown'
-        logger.info(f"[TrendSense Core] Globally mounted Model Artifact Version: {meta.get('version', 'Unknown')} | R²: {r2_val}")
-        logger.info(f"[TrendSense Core] Prediction percentile scaling (0-100) is natively calibrated")
+    # 1. Initialize PyTorch Brain & SBERT
+    try:
+        model = TrendSenseMultiModal()
+        text_embedder = TextEmbedder()
+        vision_embedder = VisionEmbedder()
+        pulse_engine = LivePulseEngine()
+        
+        weights_path = os.path.join(os.path.dirname(__file__), "models", "v2_multimodal_weights.pt")
+        
+        if os.path.exists(weights_path):
+            # Load weights to CPU for API inference
+            model.load_state_dict(torch.load(weights_path, map_location='cpu'))
+            model.eval() # Disable training features like Dropout
+            
+            ml_engine["model"] = model
+            ml_engine["text_embedder"] = text_embedder
+            ml_engine["vision_embedder"] = vision_embedder
+            ml_engine["pulse_engine"] = pulse_engine
+            logger.info("✅ [TrendSense Core] PyTorch Multi-Modal weights loaded successfully.")
+        else:
+            logger.error(f"❌ [TrendSense Core] Could not find weights at {weights_path}")
+    except Exception as e:
+        logger.error(f"❌ [TrendSense Core] Neural Network failed to initialize: {e}")
 
-    # Initialize Gemini API Client with modern google-genai SDK
+    # 2. Initialize Gemini
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
     if GEMINI_API_KEY:
         try:
-            # Initialize client with explicit configuration for Google AI (not Vertex AI)
-            gemini_client = genai.Client(
-                api_key=GEMINI_API_KEY,
-                http_options={'api_version': 'v1beta'}  # Explicit API version
-            )
-            ml_engine["gemini_client"] = gemini_client
-            logger.info("✅ Gemini API client initialized successfully with google-genai SDK (v1beta)")
+            ml_engine["gemini_client"] = genai.Client(api_key=GEMINI_API_KEY)
+            logger.info("✅ Gemini API client initialized successfully.")
         except Exception as e:
-            logger.warning(f"⚠️  Failed to initialize Gemini API client: {e}")
+            logger.warning(f"⚠️ Failed to initialize Gemini API client: {e}")
     else:
-        logger.warning("⚠️  GEMINI_API_KEY not found in .env - AI suggestions will be disabled")
-
-    # Prime the Reddit Trending Slang Cache
-    _refresh_trending_slang(force=True)
+        logger.warning("⚠️ GEMINI_API_KEY not found in .env")
 
     yield
-
     logger.info("Shutting down TrendSense AI Backend Engine...")
 
 
-# Initialize FastAPI with the Startup Hook
+# --- FastAPI App Initialization ---
 app = FastAPI(
-    title="TrendSense API Backend",
-    description="The ML inference engine for the TrendSense Social Media Virality Dashboard.",
-    version="1.0.0",
+    title="TrendSense Deep Learning API",
+    version="2.0",
     lifespan=lifespan
 )
 
-# CORS Middleware (Allow frontend dashboard local requests)
+# CORS configuration for Next.js
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",      # Vite dev server
-        "http://127.0.0.1:5173",      # Vite dev server (IP)
-        "http://localhost:3000",      # Legacy React dev server
-        "http://127.0.0.1:3000"       # Legacy React dev server (IP)
-    ],
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-def _refresh_trending_slang(force: bool = False):
-    """Updates the in-memory trending slang cache every 1 hour (3600s)."""
-    current_time = time.time()
-    # 1 hr TTL
-    if force or (current_time - ml_engine["last_slang_fetch"] > 3600):
-        logger.info("Slang Cache missing or expired. Fetching fresh Reddit Trends...")
-        try:
-            reddit_df = fetch_daily_reddit_trends(limit=100)
-            if not reddit_df.empty:
-                trending_slang = extract_trending_slang(reddit_df, top_n=20)
-                ml_engine["trending_slang_cache"] = trending_slang
-                ml_engine["last_slang_fetch"] = current_time
-                logger.info(f"Successfully cached {len(trending_slang)} live trending keywords.")
-            else:
-                logger.warning("Reddit returned empty data. Retaining old cache if it exists.")
-        except Exception as e:
-            logger.error(f"Failed to fetch live trends: {e}")
-
-@app.get("/health", response_model=HealthResponse)
+# --- Endpoints ---
+@app.get("/health")
 def health_check():
-    """Simple endpoint to verify the API server is up and routing."""
-    return HealthResponse(status="ok")
+    return {"status": "TrendSense PyTorch API is running"}
 
-@app.get("/model-info", response_model=ModelInfoResponse)
-def get_model_info():
-    """Returns the metadata of the currently active model version mounted in memory."""
-    meta = ml_engine.get("model_meta")
-    if not meta:
-        raise HTTPException(status_code=503, detail="No active model metadata available.")
-        
-    return ModelInfoResponse(
-        model_version=meta.get("version", "Unknown"),
-        trained_at=meta.get("trained_at", "Unknown"),
-        validation_r2=meta.get("validation_r2", 0.0),
-        dataset_size=meta.get("dataset_size", 0),
-        feature_count=meta.get("feature_count", 0)
-    )
-
-@app.get("/live-trends")
-def get_live_trends():
-    """
-    Returns the top 10 trending keywords.
-    Uses an in-memory 1hr TTL cache to prevent Reddit API ratelimits.
-    """
-    _refresh_trending_slang()
-    # Return top 10 safely
-    return {"trending_keywords": ml_engine["trending_slang_cache"][:10]}
-
-@app.post("/predict", response_model=PredictResponse)
-def predict_virality(request: PredictRequest):
-    """
-    Ingests raw social media post text, extracts advanced Temporal+NLP features,
-    and infers the Virality Index and Top 3 Influencers without model retraining.
-    """
+@app.post("/api/predict", response_model=PredictResponse)
+async def predict_virality(
+    title: str = Form(...),
+    view_count: int = Form(0),
+    like_count: int = Form(0),
+    comment_count: int = Form(0),
+    thumbnail: UploadFile = File(None) # Make the image optional
+):
     start_time = time.time()
+    model = ml_engine["model"]
+    text_embedder = ml_engine["text_embedder"]
+    vision_embedder = ml_engine["vision_embedder"]
 
-    if ml_engine["model_artifact"] is None:
-        logger.error("Predict endpoint called but ML Engine is not initialized.")
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"error": "ML Model not loaded in memory. Server misconfigured."}
-        )
+    if not model or not text_embedder or not vision_embedder:
+        raise HTTPException(status_code=503, detail="AI Engine is offline.")
 
-    text = request.post_text
-    model_version = ml_engine["model_artifact"].get("model_type", "Unknown")
-    logger.info(f"Incoming prediction request | Length: {len(text)} chars | Model: {model_version}")
+    logger.info(f"Incoming prediction request | Title: '{title}' | Image attached: {thumbnail is not None}")
 
     try:
-        # We need the formal engineered feature vector expected by the artifact
-        current_slang = ml_engine["trending_slang_cache"]
-
-        # 1. Native NLP Engineering
-        # Calculate sentiment polarity from real VADER engine
-        sentiment_score = get_sentiment(text)
-        slang_present = contains_slang(text, current_slang)
-        k_density = calc_keyword_density(text, current_slang)
-        txt_length = len(text)
-
-        # VIRAL KEYWORD COUNT (Combat Text Blindness)
-        viral_kw_count = count_viral_keywords(text)
-        logger.debug(f"   Detected {viral_kw_count} viral keywords in input text")
-
-        # 2. Temporal Features (Use request params if provided, otherwise current time)
-        # DESTROY TIME CARDINALITY: Use is_peak_hour (binary) instead of hour_of_day (24 values)
-        now = pd.Timestamp.now()
-
-        # Prioritize simulated_hour, then hour_of_day, then current time
-        if request.simulated_hour is not None:
-            hod = request.simulated_hour
-            logger.info(f"   Using simulated_hour: {hod}")
-        elif request.hour_of_day is not None:
-            hod = request.hour_of_day
-            logger.info(f"   Using hour_of_day: {hod}")
+        # 1. Text Pipeline
+        text_vector = text_embedder.generate_embedding(title)
+        text_tensor = torch.tensor(text_vector, dtype=torch.float32).unsqueeze(0)
+        
+        # 2. Vision Pipeline (THE EYE IS OPEN)
+        if thumbnail:
+            image_bytes = await thumbnail.read()
+            vision_tensor = vision_embedder.generate_embedding(image_bytes)
+            has_thumbnail = True
         else:
-            hod = now.hour
+            # The Neutral Canvas Generator
+            logger.info("   No thumbnail detected. Generating Neutral Canvas...")
+            neutral_image = Image.new('RGB', (224, 224), color=(128, 128, 128))
+            img_byte_arr = io.BytesIO()
+            neutral_image.save(img_byte_arr, format='JPEG')
+            
+            vision_tensor = vision_embedder.generate_embedding(img_byte_arr.getvalue())
+            has_thumbnail = False
+        
+        # 3. Tabular Pipeline (THIS WAS MISSING!)
+        # We simulate a "baseline algorithm push" (e.g., 50k views) so the AI judges only the Title/Image.
+        baseline_views = 50000.0 / 100000.0
+        baseline_likes = 2500.0 / 10000.0
+        baseline_comments = 250.0 / 1000.0
+        tabular_tensor = torch.tensor([[baseline_views, baseline_likes, baseline_comments]], dtype=torch.float32)
+        
+        # 4. Neural Network Forward Pass
+        with torch.no_grad():
+            prediction = model(text_tensor, vision_tensor, tabular_tensor)
+            raw_score = prediction.item() 
+            
+            # Scale 0-10% engagement up to our 1-100 UI Hype meter
+            scaled_score = raw_score * 10.0
+            ui_score = max(1.0, min(99.9, scaled_score))
+            
+        logger.info(f"   Model Raw Engagement Rate: {raw_score:.2f}% | UI Scaled Score: {ui_score:.1f}")
 
-        # Convert to binary is_peak_hour (3 PM - 10 PM = peak hours)
-        is_peak_hour = int(15 <= hod <= 22)
-
-        if request.day_of_week is not None:
-            dow = request.day_of_week
-            logger.info(f"   Using custom day_of_week: {dow} (0=Mon, 6=Sun)")
-        else:
-            dow = now.dayofweek
-
-        if request.is_weekend is not None:
-            weekend = int(request.is_weekend)
-            logger.info(f"   Using custom is_weekend: {weekend}")
-        else:
-            # Auto-calculate from day_of_week
-            weekend = int(dow in [5, 6])
-
-        logger.info(f"   Temporal context: is_peak_hour={is_peak_hour} (hour={hod}), is_weekend={weekend}")
-
-        # 3. Build Single Row Inference DataFrame with ALL required fields
-        # CRITICAL: Must include 'text' for TF-IDF transformation
-        feature_dict = {
-            'text': text,  # CRITICAL: Required for TF-IDF vectorizer
-            'contains_trending_slang': slang_present,
-            'keyword_density': k_density,
-            'text_length': txt_length,
-            'is_peak_hour': is_peak_hour,  # NEW: Binary temporal feature (no cardinality)
-            'is_weekend': weekend,
-            'sentiment_polarity': sentiment_score,
-            'uppercase_ratio': sum(1 for c in text if c.isupper()) / max(len([c for c in text if c.isalpha()]), 1),
-            'exclamation_count': text.count('!'),
-            'question_count': text.count('?'),
-            'viral_keyword_count': viral_kw_count
-        }
-
-        inference_df = pd.DataFrame([feature_dict])
-
-        # 4. Neural Explainability Wrapper (handles TF-IDF transformation internally)
-        raw_pred_list, explanations = predict_with_explainability(ml_engine["model_artifact"], inference_df)
-        raw_score = raw_pred_list[0]
-
-        # Ensure we don't return null features and strictly sort descending by absolute importance
-        top_feats = explanations[0] if explanations else []
-        top_feats = sorted(top_feats, key=lambda x: abs(x[1]), reverse=True)
-
-        # 5. Model Output is Already Percentile (0-100)
-        # The model was trained on target_percentile, so raw prediction is the virality_index
-        virality_index = round(float(raw_score), 2)
-
-        # Boundary clamp for safety (model should already output 0-100)
-        virality_index = max(0.0, min(100.0, virality_index))
-
-        logger.info(f"   Model prediction: {virality_index:.2f}/100 (percentile rank)")
-        logger.info(f"   This post is better than {virality_index:.0f}% of posts in the training dataset")
-
-        # 6. Generate AI Content Suggestion using Gemini
-        logger.info("🤖 Generating AI content suggestion with Gemini...")
-        ai_suggestion = generate_ai_suggestion(text, virality_index)
-
-        inference_duration_ms = (time.time() - start_time) * 1000
-        logger.info(f"Success | Score: {virality_index:.2f} | Latency: {inference_duration_ms:.2f}ms")
+        # 5. Gemini Integration
+        ai_suggestion = generate_ai_suggestion(title, ui_score)
 
         return PredictResponse(
-            virality_index=round(virality_index, 2),
-            sentiment_score=round(sentiment_score, 4),
-            top_features=top_feats,
-            ai_suggestion=ai_suggestion
+            title=title,
+            virality_score=round(ui_score, 1),
+            ai_suggestion=ai_suggestion if has_thumbnail else "Upload a thumbnail to see your true virality potential! 🖼️",
+            model_version="v2_pytorch_sbert_vit",
+            status="success"
         )
 
     except Exception as e:
-        logger.error(f"Prediction inference failed fatally: {e}", exc_info=True)
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"error": f"Error processing inference logic: {str(e)}"}
-        )
+        logger.error(f"Prediction inference failed: {e}", exc_info=True)
+        return JSONResponse(status_code=500, content={"error": str(e)})
+    
+    
+@app.get("/api/live-pulse")
+async def get_live_pulse():
+    pulse_engine = ml_engine.get("pulse_engine")
+    if not pulse_engine:
+        raise HTTPException(status_code=503, detail="Live Pulse Engine offline.")
+
+    # --- 1. CHECK THE CACHE FIRST ---
+    current_time = time.time()
+    time_since_last_fetch = current_time - pulse_cache["last_fetched"]
+    
+    if pulse_cache["data"] is not None and time_since_last_fetch < pulse_cache["CACHE_TTL"]:
+        minutes_old = round(time_since_last_fetch / 60, 1)
+        logger.info(f"⚡ Serving Live Pulse from Cache (Data is {minutes_old} minutes old)")
+        
+        return {
+            "status": "success",
+            "active_trends": pulse_cache["data"],
+            "cached": True # Let the frontend know this was lightning fast
+        }
+
+    # --- 2. IF CACHE IS EMPTY OR EXPIRED, DO THE HARD WORK ---
+    logger.info("⏳ Cache expired or empty. Fetching fresh firehose data...")
+    try:
+        # Fetching top 20 posts from the 22 targeted cultural epicenters
+        reddit_df = fetch_daily_reddit_trends(limit=20) 
+        
+        if reddit_df.empty:
+             raise HTTPException(status_code=500, detail="Failed to fetch Reddit stream.")
+
+        # Pass the ENTIRE dataframe to the engine to calculate velocity
+        trends = pulse_engine.discover_trends(reddit_df)
+        
+        # --- 3. SAVE TO CACHE FOR THE NEXT RELOAD ---
+        pulse_cache["data"] = trends
+        pulse_cache["last_fetched"] = current_time
+        logger.info("💾 Live Pulse cache updated successfully!")
+        
+        return {
+            "status": "success",
+            "active_trends": trends,
+            "cached": False
+        }
+
+    except Exception as e:
+        logger.error(f"Live Pulse failed: {e}", exc_info=True)
+        # Fallback: If Reddit crashes, try to serve stale cache instead of crashing the UI
+        if pulse_cache["data"] is not None:
+             logger.warning("Serving stale cache due to fetch failure.")
+             return {"status": "success", "active_trends": pulse_cache["data"], "cached": True, "warning": "stale_data"}
+        
+        raise HTTPException(status_code=500, detail=str(e))
