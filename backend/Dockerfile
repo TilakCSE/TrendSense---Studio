@@ -7,7 +7,7 @@ WORKDIR /code
 # Copy the requirements file and install dependencies
 # (We do this first to cache the massive PyTorch downloads!)
 COPY ./requirements.txt /code/requirements.txt
-RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
 
 # Copy the rest of your backend code
 COPY . .

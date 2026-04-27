@@ -7,7 +7,7 @@ import sys
 
 # Add data/db_scripts to path for mongo upload
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'data', 'db_scripts'))
-from upload_live import append_to_mongo
+#from upload_live import append_to_mongo
 
 logger = logging.getLogger(__name__)
 
@@ -77,12 +77,12 @@ def fetch_daily_reddit_trends(subreddits=None, limit=50, upload_to_mongo=True):
         logger.info(f"⚡ [Velocity Stream] Successfully fetched {len(df)} live social signals.")
 
         # CRITICAL: Upload to MongoDB live_trends collection
-        if upload_to_mongo:
-            try:
-                append_to_mongo(df, collection_name="live_trends")
-                logger.info(f"⚡ [Velocity Stream] Ingested live posts and merged into MongoDB.")
-            except Exception as e:
-                logger.error(f"[Velocity Stream] MongoDB upload failed: {e}")
+        #if upload_to_mongo:
+            #try:
+                #append_to_mongo(df, collection_name="live_trends")
+                #logger.info(f"⚡ [Velocity Stream] Ingested live posts and merged into MongoDB.")
+            #except Exception as e:
+                #logger.error(f"[Velocity Stream] MongoDB upload failed: {e}")
     else:
         logger.warning("[Velocity Stream] No Reddit data fetched. All requests may have failed.")
 
