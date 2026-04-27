@@ -80,7 +80,7 @@ export function usePrediction() {
                         error.message.includes("NetworkError")
                     ) {
                         message =
-                            "Cannot connect to prediction server. Ensure the API is running at http://localhost:8000";
+                            "Cannot connect to the prediction server. Please check your internet connection or try again later.";
                         code = "CONNECTION_ERROR";
                     } else {
                         message = error.message;

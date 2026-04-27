@@ -33,7 +33,7 @@ function LivePulse() {
   useEffect(() => {
     const fetchPulse = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/live-pulse");
+        const response = await fetch("https://tilakcse-trendsense-api.hf.space/api/live-pulse");
         if (response.ok) {
           const data = await response.json();
           if (data.status === "success" && data.active_trends) {
@@ -198,7 +198,7 @@ export default function DashboardPage() {
         formData.append("thumbnail", selectedFile);
       }
 
-      const response = await fetch("http://localhost:8000/api/predict", {
+      const response = await fetch("https://tilakcse-trendsense-api.hf.space/api/predict", {
         method: "POST",
         body: formData,
       });
