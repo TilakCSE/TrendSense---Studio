@@ -1,5 +1,5 @@
-# Start from a solid Python 3.10 foundation
-FROM python:3.10
+# Start from a solid Python 3.11 foundation
+FROM python:3.11
 
 # Set the working directory
 WORKDIR /code
