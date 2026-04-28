@@ -19,7 +19,7 @@ from v2_engine.multimodal_nn import TrendSenseMultiModal
 from v2_engine.text_sbert import TextEmbedder
 from v2_engine.vision_vit import VisionEmbedder
 from v2_engine.trend_discovery import LivePulseEngine
-from reddit_fetcher import fetch_daily_reddit_trends
+from mongo_fetcher import fetch_live_trends_from_mongo
 
 # Load environment variables
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', 'data', '.env'))
@@ -266,13 +266,13 @@ async def get_live_pulse():
     logger.info("⏳ Cache expired or empty. Fetching fresh firehose data...")
     try:
         # Fetching top 20 posts from the 22 targeted cultural epicenters
-        reddit_df = fetch_daily_reddit_trends(limit=20) 
+        df = fetch_live_trends_from_mongo(limit=1000) 
         
-        if reddit_df.empty:
-             raise HTTPException(status_code=500, detail="Failed to fetch Reddit stream.")
+        if df.empty:
+            raise HTTPException(status_code=500, detail="Database reservoir is empty or unreachable.")
 
         # Pass the ENTIRE dataframe to the engine to calculate velocity
-        trends = pulse_engine.discover_trends(reddit_df)
+        trends = pulse_engine.discover_trends(df)
         
         # --- 3. SAVE TO CACHE FOR THE NEXT RELOAD ---
         pulse_cache["data"] = trends
