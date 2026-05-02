@@ -1,0 +1,1432 @@
+{
+  "generated_at": "2026-04-30T14:40:56.475501",
+  "v2": {
+    "summary": {
+      "total_corpus_rows": 41388,
+      "raw_archive_gb": 6.01,
+      "etl_chunks": 96,
+      "avg_views": 337550.7081,
+      "avg_likes": 8562.0097,
+      "avg_comments": 622.0096,
+      "median_views": 97773.5,
+      "median_likes": 2664.0,
+      "median_comments": 142.0
+    },
+    "correlation_matrix": [
+      {
+        "x": "Views",
+        "y": "Views",
+        "value": 1.0
+      },
+      {
+        "x": "Likes",
+        "y": "Views",
+        "value": 0.7358
+      },
+      {
+        "x": "Comments",
+        "y": "Views",
+        "value": 0.4773
+      },
+      {
+        "x": "Views",
+        "y": "Likes",
+        "value": 0.7358
+      },
+      {
+        "x": "Likes",
+        "y": "Likes",
+        "value": 1.0
+      },
+      {
+        "x": "Comments",
+        "y": "Likes",
+        "value": 0.7197
+      },
+      {
+        "x": "Views",
+        "y": "Comments",
+        "value": 0.4773
+      },
+      {
+        "x": "Likes",
+        "y": "Comments",
+        "value": 0.7197
+      },
+      {
+        "x": "Comments",
+        "y": "Comments",
+        "value": 1.0
+      }
+    ],
+    "engagement_stats": [
+      {
+        "metric": "Views",
+        "min": 0.0,
+        "q1": 38816.0,
+        "median": 97773.5,
+        "q3": 248368.25,
+        "max": 562696.625,
+        "mean": 337550.7081
+      },
+      {
+        "metric": "Likes",
+        "min": 0.0,
+        "q1": 963.0,
+        "median": 2664.0,
+        "q3": 6630.25,
+        "max": 15131.125,
+        "mean": 8562.0097
+      },
+      {
+        "metric": "Comments",
+        "min": 0.0,
+        "q1": 31.0,
+        "median": 142.0,
+        "q3": 449.0,
+        "max": 1076.0,
+        "mean": 622.0096
+      }
+    ]
+  },
+  "v3": {
+    "summary": {
+      "total_training_rows": 491,
+      "modalities": 3,
+      "live_records_per_day": 1200,
+      "virality_mean": 46.1603,
+      "virality_median": 34.8228,
+      "virality_std": 41.4147,
+      "virality_p25": 15.2661,
+      "virality_p75": 65.5738,
+      "virality_max": 284.1739,
+      "viral_threshold_pct": 22.4033,
+      "avg_views": 370221.0428,
+      "avg_likes": 9494.9022,
+      "avg_comments": 716.9919,
+      "median_views": 95856.0,
+      "median_likes": 2907.0,
+      "median_comments": 147.0
+    },
+    "histogram": [
+      {
+        "bucket": "0–10",
+        "count": 77,
+        "pct": 15.6823,
+        "isViral": false
+      },
+      {
+        "bucket": "10–20",
+        "count": 76,
+        "pct": 15.4786,
+        "isViral": false
+      },
+      {
+        "bucket": "20–30",
+        "count": 70,
+        "pct": 14.2566,
+        "isViral": false
+      },
+      {
+        "bucket": "30–40",
+        "count": 47,
+        "pct": 9.5723,
+        "isViral": false
+      },
+      {
+        "bucket": "40–50",
+        "count": 41,
+        "pct": 8.3503,
+        "isViral": false
+      },
+      {
+        "bucket": "50–60",
+        "count": 33,
+        "pct": 6.721,
+        "isViral": false
+      },
+      {
+        "bucket": "60–70",
+        "count": 37,
+        "pct": 7.5356,
+        "isViral": false
+      },
+      {
+        "bucket": "70–80",
+        "count": 29,
+        "pct": 5.9063,
+        "isViral": true
+      },
+      {
+        "bucket": "80–90",
+        "count": 15,
+        "pct": 3.055,
+        "isViral": true
+      },
+      {
+        "bucket": "90–100",
+        "count": 66,
+        "pct": 13.442,
+        "isViral": true
+      }
+    ],
+    "correlation_matrix": [
+      {
+        "x": "Views",
+        "y": "Views",
+        "value": 1.0
+      },
+      {
+        "x": "Likes",
+        "y": "Views",
+        "value": 0.6466
+      },
+      {
+        "x": "Comments",
+        "y": "Views",
+        "value": 0.519
+      },
+      {
+        "x": "Virality",
+        "y": "Views",
+        "value": -0.1418
+      },
+      {
+        "x": "Views",
+        "y": "Likes",
+        "value": 0.6466
+      },
+      {
+        "x": "Likes",
+        "y": "Likes",
+        "value": 1.0
+      },
+      {
+        "x": "Comments",
+        "y": "Likes",
+        "value": 0.8221
+      },
+      {
+        "x": "Virality",
+        "y": "Likes",
+        "value": 0.0685
+      },
+      {
+        "x": "Views",
+        "y": "Comments",
+        "value": 0.519
+      },
+      {
+        "x": "Likes",
+        "y": "Comments",
+        "value": 0.8221
+      },
+      {
+        "x": "Comments",
+        "y": "Comments",
+        "value": 1.0
+      },
+      {
+        "x": "Virality",
+        "y": "Comments",
+        "value": 0.1746
+      },
+      {
+        "x": "Views",
+        "y": "Virality",
+        "value": -0.1418
+      },
+      {
+        "x": "Likes",
+        "y": "Virality",
+        "value": 0.0685
+      },
+      {
+        "x": "Comments",
+        "y": "Virality",
+        "value": 0.1746
+      },
+      {
+        "x": "Virality",
+        "y": "Virality",
+        "value": 1.0
+      }
+    ],
+    "engagement_stats": [
+      {
+        "metric": "Views",
+        "min": 266.0,
+        "q1": 44486.5,
+        "median": 95856.0,
+        "q3": 285288.5,
+        "max": 646491.5,
+        "mean": 370221.0428
+      },
+      {
+        "metric": "Likes",
+        "min": 0.0,
+        "q1": 1178.5,
+        "median": 2907.0,
+        "q3": 7733.0,
+        "max": 17564.75,
+        "mean": 9494.9022
+      },
+      {
+        "metric": "Comments",
+        "min": 0.0,
+        "q1": 42.0,
+        "median": 147.0,
+        "q3": 508.5,
+        "max": 1208.25,
+        "mean": 716.9919
+      }
+    ],
+    "scatter_sample": [
+      {
+        "likes": 2929,
+        "virality": 10.3109,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 4235,
+        "virality": 43.9935,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 827,
+        "virality": 21.6465,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 653,
+        "virality": 11.1184,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 148,
+        "virality": 10.7158,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 1444,
+        "virality": 38.6877,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 2701,
+        "virality": 44.8778,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 1292,
+        "virality": 20.9854,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 2287,
+        "virality": 9.7594,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 885,
+        "virality": 32.8967,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 3123,
+        "virality": 63.8529,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 2565,
+        "virality": 30.3703,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 64805,
+        "virality": 43.117,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 1584,
+        "virality": 28.904,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 3281,
+        "virality": 19.0331,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 1294,
+        "virality": 32.5579,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 0,
+        "virality": 3.8484,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 21798,
+        "virality": 13.4668,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 3319,
+        "virality": 30.3288,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 3406,
+        "virality": 38.8974,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 2112,
+        "virality": 44.7423,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 1075,
+        "virality": 24.5195,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 5073,
+        "virality": 12.9283,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 11174,
+        "virality": 15.1654,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 41893,
+        "virality": 53.3186,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 16528,
+        "virality": 12.2223,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 4297,
+        "virality": 20.6071,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 1289,
+        "virality": 44.334,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 2148,
+        "virality": 29.9488,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 797,
+        "virality": 10.509,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 35214,
+        "virality": 38.5469,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 4797,
+        "virality": 16.4456,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 2532,
+        "virality": 35.4391,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 49577,
+        "virality": 14.6644,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 240,
+        "virality": 10.4207,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 2984,
+        "virality": 18.88,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 230,
+        "virality": 31.9356,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 21930,
+        "virality": 69.9921,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 8846,
+        "virality": 68.9896,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 35904,
+        "virality": 62.0337,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 441,
+        "virality": 8.9979,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 4656,
+        "virality": 40.6777,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 255,
+        "virality": 61.667,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 1308,
+        "virality": 20.1382,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 432,
+        "virality": 34.9716,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 10773,
+        "virality": 47.7628,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 1421,
+        "virality": 14.2325,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 2411,
+        "virality": 52.7488,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 4317,
+        "virality": 33.0134,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 10844,
+        "virality": 18.0005,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 871,
+        "virality": 47.8519,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 9600,
+        "virality": 27.2169,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 5193,
+        "virality": 67.7387,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 4757,
+        "virality": 9.9435,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 54,
+        "virality": 3.2761,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 1871,
+        "virality": 22.0618,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 7636,
+        "virality": 43.9809,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 1864,
+        "virality": 18.9375,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 917,
+        "virality": 37.9045,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 6004,
+        "virality": 54.2144,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 365,
+        "virality": 23.444,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 62805,
+        "virality": 26.0661,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 5574,
+        "virality": 25.9211,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 2091,
+        "virality": 22.7416,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 1669,
+        "virality": 35.6847,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 125,
+        "virality": 8.0127,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 22915,
+        "virality": 38.8374,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 2943,
+        "virality": 16.8865,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 132080,
+        "virality": 40.472,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 2716,
+        "virality": 21.1591,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 1467,
+        "virality": 33.4222,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 7210,
+        "virality": 69.2808,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 2573,
+        "virality": 7.0156,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 23595,
+        "virality": 27.362,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 2858,
+        "virality": 33.5552,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 23928,
+        "virality": 59.4696,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 35357,
+        "virality": 65.4341,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 8727,
+        "virality": 23.7087,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 6204,
+        "virality": 21.554,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 306,
+        "virality": 18.1859,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 7218,
+        "virality": 27.5825,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 5488,
+        "virality": 8.8203,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 2876,
+        "virality": 21.9795,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 3923,
+        "virality": 47.1213,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 2402,
+        "virality": 44.4922,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 1220,
+        "virality": 19.81,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 3386,
+        "virality": 45.2848,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 3410,
+        "virality": 21.9378,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 913,
+        "virality": 21.225,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 4259,
+        "virality": 64.0077,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 544,
+        "virality": 12.3415,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 1585,
+        "virality": 22.7058,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 2745,
+        "virality": 63.2004,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 99079,
+        "virality": 63.5032,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 401,
+        "virality": 13.9623,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 7526,
+        "virality": 62.2109,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 3917,
+        "virality": 53.1117,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 4890,
+        "virality": 34.8228,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 2453,
+        "virality": 3.336,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 2650,
+        "virality": 11.4762,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 9145,
+        "virality": 33.1964,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 12239,
+        "virality": 43.8087,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 2676,
+        "virality": 53.5545,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 11527,
+        "virality": 56.8507,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 1345,
+        "virality": 16.9086,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 2108,
+        "virality": 23.6224,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 8975,
+        "virality": 21.3077,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 619,
+        "virality": 10.1697,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 1969,
+        "virality": 46.6281,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 4879,
+        "virality": 61.4547,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 563,
+        "virality": 34.315,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 4109,
+        "virality": 43.0299,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 20981,
+        "virality": 41.1603,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 3030,
+        "virality": 54.946,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 1804,
+        "virality": 39.2971,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 644,
+        "virality": 26.8548,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 5199,
+        "virality": 48.9584,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 2327,
+        "virality": 61.5062,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 273,
+        "virality": 24.5146,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 12843,
+        "virality": 38.9277,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 0,
+        "virality": 3.0641,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 2106,
+        "virality": 23.8221,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 11311,
+        "virality": 108.5814,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 24436,
+        "virality": 87.4989,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 2311,
+        "virality": 97.6904,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 5311,
+        "virality": 78.7934,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 652,
+        "virality": 113.3971,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 6877,
+        "virality": 131.9144,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 5589,
+        "virality": 90.8177,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 9123,
+        "virality": 107.4102,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 5271,
+        "virality": 93.3138,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 12395,
+        "virality": 127.0652,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 31526,
+        "virality": 110.4038,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 1465,
+        "virality": 73.4827,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 63045,
+        "virality": 98.9113,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 573,
+        "virality": 83.7305,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 2435,
+        "virality": 73.3234,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 3021,
+        "virality": 109.3845,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 4103,
+        "virality": 74.2921,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 5620,
+        "virality": 121.9886,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 4525,
+        "virality": 114.9177,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 2729,
+        "virality": 93.1225,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 1988,
+        "virality": 100.1215,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 4664,
+        "virality": 114.6292,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 16709,
+        "virality": 116.8801,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 2567,
+        "virality": 99.0262,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 12437,
+        "virality": 82.7038,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 18434,
+        "virality": 124.7554,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 895,
+        "virality": 84.1419,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 681,
+        "virality": 71.2359,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 5747,
+        "virality": 71.7362,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 10970,
+        "virality": 85.2464,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 4980,
+        "virality": 90.3747,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 1238,
+        "virality": 117.1099,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 11436,
+        "virality": 117.8569,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 1359,
+        "virality": 72.9271,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 22,
+        "virality": 90.2256,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 2830,
+        "virality": 120.3335,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 1443,
+        "virality": 114.4784,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 7203,
+        "virality": 111.143,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 7656,
+        "virality": 77.1404,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 2066,
+        "virality": 74.8127,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 9685,
+        "virality": 106.1216,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 1255,
+        "virality": 104.8292,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 29153,
+        "virality": 132.5843,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 3270,
+        "virality": 98.7304,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 10802,
+        "virality": 73.125,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 4582,
+        "virality": 73.4988,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 1068,
+        "virality": 82.1005,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 1372,
+        "virality": 106.6851,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 4350,
+        "virality": 72.9554,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 23429,
+        "virality": 82.9736,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 3982,
+        "virality": 91.5115,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 245,
+        "virality": 76.6104,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 335,
+        "virality": 78.3713,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 3354,
+        "virality": 101.9999,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 1927,
+        "virality": 76.5642,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 2680,
+        "virality": 90.2019,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 119923,
+        "virality": 83.026,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 7434,
+        "virality": 116.0552,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 2743,
+        "virality": 88.3619,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 9543,
+        "virality": 76.7533,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 6391,
+        "virality": 100.121,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 16529,
+        "virality": 103.988,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 6565,
+        "virality": 75.2789,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 2101,
+        "virality": 81.6448,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 7349,
+        "virality": 72.5511,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 671,
+        "virality": 72.7826,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 15396,
+        "virality": 141.2713,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 527,
+        "virality": 76.7485,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 5022,
+        "virality": 106.6431,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 14045,
+        "virality": 104.8989,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 5852,
+        "virality": 80.8077,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 51859,
+        "virality": 104.8368,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 23947,
+        "virality": 122.5248,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 9101,
+        "virality": 108.0963,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 3854,
+        "virality": 75.0811,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 313,
+        "virality": 81.8828,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 11961,
+        "virality": 116.4623,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 2214,
+        "virality": 74.9901,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 13531,
+        "virality": 94.9182,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 5923,
+        "virality": 104.9685,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 359,
+        "virality": 72.1379,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 160,
+        "virality": 75.188,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 50938,
+        "virality": 116.2293,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 7970,
+        "virality": 108.5801,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 254,
+        "virality": 103.3781,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 599,
+        "virality": 119.993,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 9292,
+        "virality": 82.1064,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 246,
+        "virality": 91.403,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 953,
+        "virality": 80.0355,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 2907,
+        "virality": 94.4982,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 1676,
+        "virality": 76.8607,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 50202,
+        "virality": 98.0197,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 3963,
+        "virality": 89.0761,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 1744,
+        "virality": 78.3133,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 2997,
+        "virality": 195.2688,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 16160,
+        "virality": 143.3465,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 7798,
+        "virality": 203.5931,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 1752,
+        "virality": 194.3838,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 6822,
+        "virality": 152.9505,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 948,
+        "virality": 165.9616,
+        "commentQuartile": "Low"
+      },
+      {
+        "likes": 7783,
+        "virality": 157.513,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 3107,
+        "virality": 173.9742,
+        "commentQuartile": "Medium"
+      },
+      {
+        "likes": 18607,
+        "virality": 247.5041,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 2873,
+        "virality": 233.4091,
+        "commentQuartile": "High"
+      },
+      {
+        "likes": 6064,
+        "virality": 218.0483,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 17266,
+        "virality": 284.1739,
+        "commentQuartile": "Very High"
+      },
+      {
+        "likes": 3138,
+        "virality": 216.0752,
+        "commentQuartile": "High"
+      }
+    ]
+  }
+}
