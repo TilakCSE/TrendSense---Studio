@@ -3,145 +3,159 @@
 import { motion, Variants } from "framer-motion";
 import { Zap, BrainCircuit, BarChart3, Fingerprint, Sparkles } from "lucide-react";
 
-export default function LivePreview() {
-  // Mock data reflecting your BackendPredictResponse contract
-  const mockPrediction = {
-    virality_index: 88,
-    sentiment_score: 0.65, // Positive
-    top_features: [
-      { keyword: "aesthetic", score: 0.45 },
-      { keyword: "routine", score: 0.38 },
-      { keyword: "coffee", score: 0.22 },
-      { keyword: "morning", score: 0.15 },
-    ],
-    ai_suggestion:
-      "High virality potential detected. The intersection of 'aesthetic' and 'routine' signals strong algorithmic resonance. We recommend pushing this live between 08:00 AM and 09:30 AM EST to maximize initial engagement velocity.",
-  };
+const mockPrediction = {
+  virality_index: 88,
+  sentiment_score: 0.65,
+  top_features: [
+    { keyword: "aesthetic", score: 0.45 },
+    { keyword: "routine",   score: 0.38 },
+    { keyword: "coffee",    score: 0.22 },
+    { keyword: "morning",   score: 0.15 },
+  ],
+  ai_suggestion:
+    "High virality potential detected. The intersection of 'aesthetic' and 'routine' signals strong algorithmic resonance. We recommend pushing this live between 08:00 AM and 09:30 AM EST to maximise initial engagement velocity.",
+};
 
-  const containerVariants : Variants = {
-    hidden: { opacity: 0, y: 40 },
+export default function LivePreview() {
+  const containerVariants: Variants = {
+    hidden:  { opacity: 0, y: 40 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.8, staggerChildren: 0.2 },
+      transition: { duration: 0.8, staggerChildren: 0.18 },
     },
   };
 
-  const itemVariants : Variants = {
-    hidden: { opacity: 0, y: 20 },
+  const itemVariants: Variants = {
+    hidden:  { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 80 } },
   };
 
   return (
-    <section className="relative w-full py-32 px-6 bg-mashed-potatoes overflow-hidden">
+    <section className="relative w-full py-32 px-6 bg-cream overflow-hidden">
+      <div className="absolute top-0 left-6 right-6 h-px bg-emerald/10" />
+
       <div className="max-w-6xl mx-auto">
-        
-        {/* Section Header */}
+        {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="mb-16"
         >
-          <h2 className="font-heading text-4xl md:text-5xl text-green-bean mb-4">
-            Peek Inside the <span className="text-cranberry italic">Engine.</span>
+          <span className="text-gold text-xs uppercase tracking-[0.25em] font-mono mb-4 block">
+            Demo
+          </span>
+          <h2 className="font-heading text-4xl md:text-5xl text-emerald leading-tight">
+            Peek Inside the{" "}
+            <em className="text-burgundy not-italic italic">Engine.</em>
           </h2>
-          <p className="text-artichoke text-lg max-w-2xl mx-auto">
+          <p className="text-emerald/55 text-lg mt-4 leading-relaxed max-w-xl">
             A live look at the telemetry our AI extracts from your raw copy.
           </p>
         </motion.div>
 
-        {/* Dashboard Preview Window */}
+        {/* Dashboard window */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="relative rounded-3xl bg-green-bean text-mashed-potatoes shadow-2xl shadow-green-bean/20 overflow-hidden border border-artichoke/20"
+          viewport={{ once: true, margin: "-80px" }}
+          className="relative rounded-2xl bg-charcoal text-cream overflow-hidden border border-cream/8 shadow-[0_40px_80px_-20px_rgba(16,17,17,0.5)]"
         >
-          {/* Mac-style Window Controls */}
-          <div className="flex items-center gap-2 px-6 py-4 border-b border-white/30 bg-black/30">
-            <div className="w-3 h-3 rounded-full bg-cranberry/80" />
-            <div className="w-3 h-3 rounded-full bg-mashed-potatoes/70" />
-            <div className="w-3 h-3 rounded-full bg-mashed-potatoes/70" />
-            <div className="ml-4 text-xs font-mono tracking-widest text-artichoke uppercase">
+          {/* Window chrome */}
+          <div className="flex items-center gap-2 px-6 py-4 border-b border-cream/8 bg-black/20">
+            <div className="w-3 h-3 rounded-full bg-burgundy/80" />
+            <div className="w-3 h-3 rounded-full bg-cream/20" />
+            <div className="w-3 h-3 rounded-full bg-cream/20" />
+            <div className="ml-4 text-xs font-mono tracking-widest text-cream/25 uppercase">
               TrendSense // Prediction Node_01
             </div>
           </div>
 
-          <div className="p-8 md:p-12 grid grid-cols-1 lg:grid-cols-5 gap-12">
-            
-            {/* Left Column: Input Panel */}
-            <motion.div variants={itemVariants} className="lg:col-span-2 flex flex-col gap-6">
+          <div className="p-8 md:p-12 grid grid-cols-1 lg:grid-cols-5 gap-10">
+            {/* ── Input panel ── */}
+            <motion.div
+              variants={itemVariants}
+              className="lg:col-span-2 flex flex-col gap-6"
+            >
               <div>
-                <label className="flex items-center gap-2 text-sm uppercase tracking-widest text-artichoke mb-3">
-                  <Fingerprint className="w-4 h-4" />
+                <label className="flex items-center gap-2 text-xs uppercase tracking-widest text-cream/30 font-mono mb-3">
+                  <Fingerprint className="w-3.5 h-3.5" />
                   Raw Input Signal
                 </label>
-                <div className="bg-black/40 rounded-xl p-5 border border-white/20">
-                  <p className="text-mashed-potatoes/90 leading-relaxed font-body">
-                    "romanticizing my morning routine because life is too short for bad coffee and rushed mornings. ☕️✨ #aesthetic"
+                <div className="bg-black/30 rounded-xl p-5 border border-cream/10">
+                  <p className="text-cream/80 leading-relaxed text-sm">
+                    &ldquo;romanticizing my morning routine because life is too
+                    short for bad coffee and rushed mornings. ☕️✨ #aesthetic&rdquo;
                   </p>
                 </div>
               </div>
 
-              {/* Simulated "Run" Button */}
-              <div className="mt-auto">
-                <div className="w-full py-4 rounded-lg bg-cranberry/50 border border-cranberry/60 flex items-center justify-center gap-2 text-cranberry relative overflow-hidden">
-                  <div className="absolute inset-0 bg-cranberry/10 animate-pulse" />
-                  <Zap className="w-5 h-5 relative z-10" />
-                  <span className="font-semibold tracking-widest uppercase relative z-10 text-sm">
-                    Signal Processed
-                  </span>
-                </div>
+              {/* Signal processed indicator */}
+              <div className="mt-auto w-full py-4 rounded-lg bg-burgundy/20 border border-burgundy/30 flex items-center justify-center gap-2 relative overflow-hidden">
+                <div className="absolute inset-0 bg-burgundy/5 animate-pulse" />
+                <Zap className="w-4 h-4 text-burgundy relative z-10" />
+                <span className="font-mono text-xs tracking-widest uppercase text-burgundy relative z-10">
+                  Signal Processed
+                </span>
               </div>
             </motion.div>
 
-            {/* Right Column: Output Telemetry */}
-            <motion.div variants={itemVariants} className="lg:col-span-3 flex flex-col gap-8">
-              
-              <div className="grid grid-cols-2 gap-6">
-                {/* Virality Score */}
-                <div className="bg-black/40 rounded-xl p-6 border border-white/20 relative overflow-hidden">
-                  <div className="absolute -right-10 -top-10 w-32 h-32 bg-cranberry/20 rounded-full blur-3xl" />
-                  <div className="flex items-center gap-2 text-artichoke text-sm uppercase tracking-wider mb-2">
-                    <BarChart3 className="w-4 h-4" /> Virality Index
+            {/* ── Output telemetry ── */}
+            <motion.div
+              variants={itemVariants}
+              className="lg:col-span-3 flex flex-col gap-6"
+            >
+              <div className="grid grid-cols-2 gap-5">
+                {/* Virality score */}
+                <div className="bg-black/35 rounded-xl p-6 border border-cream/10 relative overflow-hidden">
+                  <div className="absolute -right-10 -top-10 w-32 h-32 bg-burgundy/15 rounded-full blur-3xl" />
+                  <div className="flex items-center gap-2 text-cream/30 text-xs uppercase tracking-widest font-mono mb-3">
+                    <BarChart3 className="w-3.5 h-3.5" /> Virality Index
                   </div>
                   <div className="flex items-baseline gap-2">
-                    <span className="font-heading text-6xl text-mashed-potatoes">
+                    <span className="font-heading text-6xl text-cream">
                       {mockPrediction.virality_index}
                     </span>
-                    <span className="text-cranberry font-bold">/100</span>
+                    <span className="text-gold font-semibold text-sm">/100</span>
                   </div>
-                  <div className="w-full h-1 bg-white/30 rounded-full mt-4 overflow-hidden">
-                    <motion.div 
+                  <div className="w-full h-0.5 bg-cream/8 rounded-full mt-4 overflow-hidden">
+                    <motion.div
                       initial={{ width: 0 }}
                       whileInView={{ width: "88%" }}
                       transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
-                      className="h-full bg-cranberry"
+                      viewport={{ once: true }}
+                      className="h-full bg-gold"
                     />
                   </div>
                 </div>
 
-                {/* Sentiment & Features */}
+                {/* Sentiment + vectors */}
                 <div className="flex flex-col gap-4">
-                  <div className="bg-black/40 rounded-xl p-5 border border-white/20 flex-1">
-                    <div className="text-artichoke text-sm uppercase tracking-wider mb-2">
+                  <div className="bg-black/35 rounded-xl p-5 border border-cream/10 flex-1">
+                    <div className="text-cream/30 text-xs uppercase tracking-widest font-mono mb-2">
                       Sentiment
                     </div>
-                    <div className="text-2xl text-mashed-potatoes">
-                      Positive <span className="text-artichoke text-lg">({mockPrediction.sentiment_score})</span>
+                    <div className="text-xl text-cream font-heading">
+                      Positive{" "}
+                      <span className="text-cream/35 text-base">
+                        ({mockPrediction.sentiment_score})
+                      </span>
                     </div>
                   </div>
-                  <div className="bg-black/40 rounded-xl p-5 border border-white/20 flex-1">
-                     <div className="text-artichoke text-xs uppercase tracking-wider mb-3">
+                  <div className="bg-black/35 rounded-xl p-5 border border-cream/10 flex-1">
+                    <div className="text-cream/30 text-xs uppercase tracking-widest font-mono mb-3">
                       Influence Vectors
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {mockPrediction.top_features.map((feat) => (
-                        <span key={feat.keyword} className="px-3 py-1 rounded-full text-xs border border-artichoke/40 bg-white/30 text-mashed-potatoes">
-                          {feat.keyword} <span className="text-artichoke ml-1">{feat.score}</span>
+                        <span
+                          key={feat.keyword}
+                          className="px-3 py-1 rounded-full text-xs border border-cream/15 bg-cream/5 text-cream/70"
+                        >
+                          {feat.keyword}
                         </span>
                       ))}
                     </div>
@@ -149,25 +163,26 @@ export default function LivePreview() {
                 </div>
               </div>
 
-              {/* AI Oracle Suggestion */}
-              <div className="bg-cabernet/70 rounded-xl p-6 border border-cranberry/50 relative overflow-hidden">
-                 <div className="absolute top-0 left-0 w-1 h-full bg-cranberry" />
-                 <div className="flex items-start gap-4">
-                    <div className="p-2 rounded-lg bg-cranberry/40">
-                      <BrainCircuit className="w-6 h-6 text-cranberry" />
+              {/* Oracle suggestion */}
+              <div className="bg-burgundy/15 rounded-xl p-6 border border-burgundy/25 relative overflow-hidden">
+                <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-burgundy" />
+                <div className="flex items-start gap-4">
+                  <div className="p-2 rounded-lg bg-burgundy/25">
+                    <BrainCircuit className="w-5 h-5 text-burgundy" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="font-heading text-xl text-cream">
+                        The Oracle Says
+                      </span>
+                      <Sparkles className="w-3.5 h-3.5 text-gold" />
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="font-heading text-xl text-mashed-potatoes">The Oracle Says</span>
-                        <Sparkles className="w-4 h-4 text-cranberry" />
-                      </div>
-                      <p className="text-mashed-potatoes/80 leading-relaxed text-sm">
-                        {mockPrediction.ai_suggestion}
-                      </p>
-                    </div>
-                 </div>
+                    <p className="text-cream/60 leading-relaxed text-sm">
+                      {mockPrediction.ai_suggestion}
+                    </p>
+                  </div>
+                </div>
               </div>
-
             </motion.div>
           </div>
         </motion.div>

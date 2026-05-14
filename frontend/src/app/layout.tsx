@@ -1,19 +1,15 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
-import { Inter } from "next/font/google";
+import { Geist, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import SmoothScroller from "@/components/SmoothScroller";
 
-// Assuming you download 'Paradiso' or similar from your font list
-const headingFont = localFont({
-  src: "../../public/fonts/Paradiso.otf",
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
+
+const headingFont = Playfair_Display({
+  subsets: ["latin"],
   variable: "--font-heading",
   display: "swap",
-});
-
-const bodyFont = Inter({ 
-  subsets: ["latin"],
-  variable: "--font-body",
 });
 
 export const metadata: Metadata = {
@@ -23,19 +19,20 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html
+      lang="en"
+      className={cn("scroll-smooth", geist.variable, headingFont.variable)}
+    >
       <body
         className={cn(
-          "min-h-screen bg-mashed-potatoes text-mulled-wine font-body antialiased selection:bg-cranberry selection:text-mashed-potatoes",
-          headingFont.variable,
-          bodyFont.variable
+          "min-h-screen bg-cream text-emerald antialiased",
+          "selection:bg-burgundy selection:text-cream",
+          geist.className
         )}
       >
-        {children}
+        <SmoothScroller>{children}</SmoothScroller>
       </body>
     </html>
   );

@@ -1,429 +1,605 @@
 "use client";
 
-import { useState, useRef, useEffect, DragEvent, ChangeEvent } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  useState, useRef, useEffect, DragEvent, ChangeEvent, useCallback,
+} from "react";
 import Link from "next/link";
-import { 
-  ArrowLeft, Activity, Sparkles, BrainCircuit, 
-  BarChart3, Loader2, Send, Cpu, ImagePlus, X, Radio, Flame, ArrowUpRight
+import { Canvas, useFrame } from "@react-three/fiber";
+import { Sphere, MeshDistortMaterial, Float, Stars } from "@react-three/drei";
+import * as THREE from "three";
+import {
+  ArrowLeft, Activity, Sparkles, BrainCircuit,
+  BarChart3, Loader2, Send, Cpu, ImagePlus, X,
+  Radio, Flame, Zap, TrendingUp, Eye, Users,
+  ChevronRight, AlertTriangle, CheckCircle2,
 } from "lucide-react";
 
-interface PredictResponse {
+// ─────────────────────────────────────────────
+// TYPES
+// ─────────────────────────────────────────────
+interface AnalyzeResponse {
   title: string;
-  virality_score: number;
-  ai_suggestion: string;
-  model_version: string;
-  status: string;
+  base_structural_score: number;
+  entity_tier: "S" | "A" | "B" | "None";
+  entity_multiplier: number;
+  final_virality_score: number;
+  cohesion_score: number;
+  thumbnail_analysis: string;
+  ai_strategy_report: string;
 }
 
-interface Trend {
-  topic_id: number;
-  name: string;
-  post_count: number;
-  velocity_score: number;
-  sample_post: string;
-  sample_score: number;
-}
+// ─────────────────────────────────────────────
+// MOCK LIVE PULSE DATA
+// ─────────────────────────────────────────────
+const MOCK_TRENDS = [
+  { id: 1, name: "MrBeast",       post_count: 142800, velocity_score: 98420, isHyperViral: true  },
+  { id: 2, name: "Squid Game S3", post_count: 89400,  velocity_score: 74100, isHyperViral: true  },
+  { id: 3, name: "IShowSpeed",    post_count: 67200,  velocity_score: 54300, isHyperViral: true  },
+  { id: 4, name: "Samay Raina",   post_count: 43100,  velocity_score: 31200, isHyperViral: false },
+  { id: 5, name: "Minecraft S2",  post_count: 28700,  velocity_score: 19800, isHyperViral: false },
+];
 
-// --- LIVE PULSE TELEMETRY ---
-function LivePulse() {
-  const [trends, setTrends] = useState<Trend[]>([]);
-  const [loading, setLoading] = useState(true);
+// ─────────────────────────────────────────────
+// 3D SCORE ORB
+// ─────────────────────────────────────────────
+function ScoreOrb({ score, active }: { score: number; active: boolean }) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const scoreColor =
+    score < 30 ? "#3a1115"
+    : score < 60 ? "#5D1E21"
+    : score < 80 ? "#8B4513"
+    : "#A6824A";
 
-  useEffect(() => {
-    const fetchPulse = async () => {
-      try {
-        const response = await fetch("https://tilakcse-trendsense-api.hf.space/api/live-pulse");
-        if (response.ok) {
-          const data = await response.json();
-          if (data.status === "success" && data.active_trends) {
-            setTrends(data.active_trends);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch live pulse telemetry:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPulse();
-  }, []);
+  useFrame((state) => {
+    if (!meshRef.current) return;
+    meshRef.current.rotation.y = state.clock.getElapsedTime() * 0.3;
+    meshRef.current.rotation.x = Math.sin(state.clock.getElapsedTime() * 0.2) * 0.1;
+  });
 
   return (
-    <section className="w-full mt-8 p-6 bg-black/5 border border-artichoke/20 rounded-2xl relative overflow-visible z-50">
-      
-      {/* Background glow */}
-      <div className="absolute -left-32 -bottom-32 w-64 h-64 bg-cranberry/10 rounded-full blur-3xl pointer-events-none" />
-      
-      <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-6">
-        
-        {/* Pulse Header */}
-        <div className="flex items-center gap-4 shrink-0 border-r border-artichoke/20 pr-6">
-          <div className="relative flex items-center justify-center">
-            <div className="absolute w-4 h-4 bg-cranberry/40 rounded-full animate-ping" />
-            <div className="w-2 h-2 bg-cranberry rounded-full relative z-10" />
-          </div>
-          <div>
-            <h3 className="font-heading text-xl text-mulled-wine flex items-center gap-2">
-              Live Pulse <Radio className="w-4 h-4 text-cranberry" />
-            </h3>
-            <p className="text-xs font-mono uppercase tracking-widest text-artichoke mt-1">
-              Autonomous Cluster Discovery
-            </p>
-          </div>
-        </div>
-
-        {/* Streaming Data Badges (No Hover Tooltips) */}
-        <div className="flex-1 flex flex-wrap gap-3">
-          {loading ? (
-            <div className="flex items-center gap-2 text-artichoke font-mono text-sm">
-              <Loader2 className="w-4 h-4 animate-spin" /> Scanning data streams...
-            </div>
-          ) : trends.length > 0 ? (
-            trends.map((trend, idx) => {
-              const isHyperViral = trend.velocity_score > 10000;
-
-              return (
-                <motion.div 
-                  key={trend.topic_id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: idx * 0.1 }}
-                  className={`px-4 py-2 rounded-lg border bg-black/5 flex items-center gap-3 ${
-                    isHyperViral 
-                      ? "border-cranberry/60 bg-cranberry/10 shadow-[0_0_15px_rgba(115,65,65,0.1)]" 
-                      : "border-artichoke/30 bg-black/10"
-                  }`}
-                >
-                  {isHyperViral && (
-                    <Flame className="w-4 h-4 text-cranberry animate-pulse" />
-                  )}
-                  <span className="text-sm font-medium text-mulled-wine">
-                    {trend.name}
-                  </span>
-                  <span className="text-xs font-mono text-artichoke bg-white/40 px-2 py-0.5 rounded border border-artichoke/10">
-                    {trend.post_count} posts
-                  </span>
-                </motion.div>
-              );
-            })
-          ) : (
-             <span className="text-sm font-mono text-artichoke">No active clusters detected.</span>
-          )}
-        </div>
-
-      </div>
-    </section>
+    <Float speed={1.5} rotationIntensity={0.3} floatIntensity={0.5}>
+      <Sphere ref={meshRef} args={[1.8, 64, 64]}>
+        <MeshDistortMaterial
+          color={scoreColor}
+          distort={active ? 0.35 : 0.15}
+          speed={active ? 2.5 : 0.8}
+          roughness={0.1}
+          metalness={0.8}
+          transparent
+          opacity={0.92}
+        />
+      </Sphere>
+      <Sphere args={[1.85, 16, 16]}>
+        <meshBasicMaterial color={scoreColor} wireframe transparent opacity={0.06} />
+      </Sphere>
+    </Float>
   );
 }
 
+function OrbScene({ score, active }: { score: number; active: boolean }) {
+  return (
+    <Canvas camera={{ position: [0, 0, 5], fov: 45 }} style={{ background: "transparent" }}>
+      <Stars radius={30} depth={30} count={200} factor={2} saturation={0} fade />
+      <ambientLight intensity={0.3} />
+      <pointLight position={[5, 5, 5]} intensity={1.5} color="#5D1E21" />
+      <pointLight position={[-5, -3, 2]} intensity={0.8} color="#A6824A" />
+      <ScoreOrb score={score} active={active} />
+    </Canvas>
+  );
+}
+
+// ─────────────────────────────────────────────
+// ENTITY TIER BADGE
+// ─────────────────────────────────────────────
+function TierBadge({ tier }: { tier: "S" | "A" | "B" | "None" }) {
+  const config = {
+    S:    { label: "S-TIER ENTITY",  bg: "bg-burgundy/20 border-burgundy/50", text: "text-burgundy" },
+    A:    { label: "A-TIER ENTITY",  bg: "bg-gold/15 border-gold/40",         text: "text-gold"     },
+    B:    { label: "B-TIER ENTITY",  bg: "bg-emerald/15 border-emerald/30",   text: "text-emerald/70" },
+    None: { label: "NO ENTITY BOOST",bg: "bg-cream/5 border-cream/10",         text: "text-cream/30" },
+  };
+  const c = config[tier];
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-mono uppercase tracking-widest ${c.bg} ${c.text}`}>
+      <Zap className="w-3 h-3" />
+      {c.label}
+    </span>
+  );
+}
+
+// ─────────────────────────────────────────────
+// COHESION LABEL
+// ─────────────────────────────────────────────
+function cohesionLabel(score: number): { label: string; color: string; icon: React.ReactNode } {
+  if (score >= 0.35) return { label: "Excellent alignment",      color: "text-emerald",       icon: <CheckCircle2 className="w-4 h-4" /> };
+  if (score >= 0.28) return { label: "Good alignment",           color: "text-gold",           icon: <CheckCircle2 className="w-4 h-4" /> };
+  if (score >= 0.23) return { label: "Average — some disconnect", color: "text-gold/70",       icon: <AlertTriangle className="w-4 h-4" /> };
+  if (score >= 0.21) return { label: "Weak — image mismatch",    color: "text-burgundy",      icon: <AlertTriangle className="w-4 h-4" /> };
+  return                   { label: "Strong clickbait signal",   color: "text-red-400",        icon: <AlertTriangle className="w-4 h-4" /> };
+}
+
+// ─────────────────────────────────────────────
+// PROGRESS BAR
+// ─────────────────────────────────────────────
+function ProgressBar({ value, color = "bg-burgundy", delay = 0 }: { value: number; color?: string; delay?: number }) {
+  const [width, setWidth] = useState(0);
+  useEffect(() => {
+    const t = setTimeout(() => setWidth(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return (
+    <div className="w-full h-1 bg-cream/8 rounded-full overflow-hidden">
+      <div
+        className={`h-full ${color} rounded-full transition-all duration-1000 ease-out`}
+        style={{ width: `${width}%` }}
+      />
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// MAIN DASHBOARD
+// ─────────────────────────────────────────────
 export default function DashboardPage() {
-  const [postText, setPostText] = useState("");
+  const [title, setTitle]               = useState("");
+  const [hook, setHook]                 = useState("");
+  const [entities, setEntities]         = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<PredictResponse | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
+  const [previewUrl, setPreviewUrl]     = useState<string | null>(null);
+  const [isDragging, setIsDragging]     = useState(false);
+  const [loading, setLoading]           = useState(false);
+  const [error, setError]               = useState<string | null>(null);
+  const [result, setResult]             = useState<AnalyzeResponse | null>(null);
+  const [phase, setPhase]               = useState("");
+
+  const PHASES = [
+    "Letterboxing thumbnail...",
+    "Running PyTorch math engine...",
+    "LLaVA vision analysis...",
+    "Culture entity scan...",
+    "Generating strategy report...",
+  ];
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const phaseRef     = useRef(0);
 
   useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
+    return () => { if (previewUrl) URL.revokeObjectURL(previewUrl); };
   }, [previewUrl]);
 
-  const handleFile = (file: File) => {
-    if (file.type.startsWith("image/")) {
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-      setError(null);
-    } else {
-      setError("Please upload a valid image file (.jpg, .png)");
-    }
-  };
+  useEffect(() => {
+    if (!loading) { phaseRef.current = 0; setPhase(""); return; }
+    setPhase(PHASES[0]);
+    const interval = setInterval(() => {
+      phaseRef.current = (phaseRef.current + 1) % PHASES.length;
+      setPhase(PHASES[phaseRef.current]);
+    }, 4000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
 
-  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
+  // ── File handling ──────────────────────────
+  const handleFile = useCallback((file: File) => {
+    if (!file.type.startsWith("image/")) { setError("Upload a valid image (.jpg, .png, .webp)"); return; }
+    setSelectedFile(file);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(URL.createObjectURL(file));
+    setError(null);
+  }, [previewUrl]);
 
-  const handleDragLeave = () => {
-    setIsDragging(false);
+  const handleDragOver  = (e: DragEvent<HTMLDivElement>) => { e.preventDefault(); setIsDragging(true); };
+  const handleDragLeave = () => setIsDragging(false);
+  const handleDrop      = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault(); setIsDragging(false);
+    if (e.dataTransfer.files?.[0]) handleFile(e.dataTransfer.files[0]);
   };
-
-  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0]);
-    }
-  };
-
-  const handleFileInput = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      handleFile(e.target.files[0]);
-    }
-  };
-
+  const handleFileInput = (e: ChangeEvent<HTMLInputElement>) => { if (e.target.files?.[0]) handleFile(e.target.files[0]); };
   const clearFile = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setSelectedFile(null);
+    e.stopPropagation(); setSelectedFile(null);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handlePredict = async () => {
-    if (!postText.trim() && !selectedFile) {
-      setError("Please provide at least a title or an image signal.");
-      return;
-    }
-    
-    setLoading(true);
-    setError(null);
-    setResult(null);
+  const hookWords = hook.trim() === "" ? 0 : hook.trim().split(/\s+/).length;
+  const handleHookChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    const words = e.target.value.trim().split(/\s+/);
+    if (e.target.value === "" || words.length <= 150) setHook(e.target.value);
+  };
 
+  const canSubmit = title.trim() && hook.trim() && selectedFile && !loading;
+
+  const handleAnalyze = async () => {
+    if (!canSubmit) { setError("Title, hook, and thumbnail are all required."); return; }
+    setLoading(true); setError(null); setResult(null);
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("hook", hook);
+    formData.append("thumbnail", selectedFile!);
+    if (entities.trim()) formData.append("user_entities", entities.trim());
     try {
-      const formData = new FormData();
-      formData.append("title", postText);
-      formData.append("view_count", "0");
-      formData.append("like_count", "0");
-      formData.append("comment_count", "0");
-      
-      if (selectedFile) {
-        formData.append("thumbnail", selectedFile);
-      }
-
-      const response = await fetch("https://tilakcse-trendsense-api.hf.space/api/predict", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Engine Error: HTTP ${response.status}`);
-      }
-
-      const data: PredictResponse = await response.json();
+      const res = await fetch("http://localhost:8000/analyze", { method: "POST", body: formData });
+      if (!res.ok) throw new Error(`Engine error: HTTP ${res.status}`);
+      const data: AnalyzeResponse = await res.json();
       setResult(data);
-    } catch (err: any) {
-      setError(
-        err.message || "Failed to connect to the Neural Core. Ensure the PyTorch API is running."
-      );
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      setError(msg.includes("fetch") ? "Cannot reach Neural Core — is api.py running on port 8000?" : msg);
     } finally {
       setLoading(false);
     }
   };
 
+  const parsedReport = result?.ai_strategy_report
+    ? result.ai_strategy_report
+        .split(/\n\n+/)
+        .filter(s => s.trim().length > 0)
+        .map(s => s.replace(/^\*+|^\d+\.\s*/gm, "").replace(/\*\*/g, "").trim())
+    : [];
+
+  const reportIcons  = [<BarChart3 key="a" className="w-4 h-4" />, <Eye key="b" className="w-4 h-4" />, <Sparkles key="c" className="w-4 h-4" />];
+  const reportLabels = ["Score Analysis", "Cohesion & Visuals", "Rewrite"];
+  const coh = result ? cohesionLabel(result.cohesion_score) : null;
+
+  // ── Shared input class ──────────────────────
+  const inputCls =
+    "w-full bg-charcoal/[0.06] border border-emerald/15 rounded-xl px-5 py-4 text-emerald outline-none placeholder:text-emerald/25 focus:border-burgundy/50 focus:bg-charcoal/[0.08] transition-all duration-300 text-sm";
+
   return (
-    <main className="min-h-screen bg-green-bean text-mashed-potatoes selection:bg-cranberry font-body flex flex-col pb-12 overflow-x-hidden">
-      
-      <nav className="w-full flex items-center justify-between px-6 py-4 border-b border-artichoke/20 bg-green-bean sticky top-0 z-50">
+    <main className="w-full min-h-screen bg-cream text-emerald font-body flex flex-col pb-20">
+
+      {/* ── Nav ─────────────────────────────── */}
+      <nav className="w-full flex items-center justify-between px-6 py-4 border-b border-emerald/10 bg-cream/90 backdrop-blur-md sticky top-0 z-[100]">
         <div className="flex items-center gap-4">
-          <Link href="/" className="text-artichoke hover:text-mashed-potatoes transition-colors">
+          <Link href="/" className="text-emerald/40 hover:text-burgundy transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <span className="font-heading text-xl tracking-wide">TrendSense<span className="text-cranberry">.</span></span>
+          <span className="font-heading text-xl tracking-wide text-emerald">
+            TrendSense<span className="text-burgundy">.</span>
+          </span>
         </div>
         <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-cranberry animate-pulse" />
-          <span className="text-xs uppercase tracking-widest text-artichoke">Multi-Modal Engine Online</span>
+          <div className="w-2 h-2 rounded-full bg-burgundy animate-pulse" />
+          <span className="text-[10px] uppercase tracking-widest text-emerald/40 font-mono">
+            Multi-Modal Engine Online
+          </span>
         </div>
       </nav>
 
-      <div className="flex-1 max-w-7xl w-full mx-auto px-6 pt-6 flex flex-col h-full relative">
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-0">
-          
-          <section className="flex flex-col h-full">
-            <h1 className="font-heading text-4xl mb-2">Input <span className="italic text-artichoke">Signal</span></h1>
-            <p className="text-artichoke mb-8 text-sm uppercase tracking-widest">Feed the neural net your title and thumbnail.</p>
-            
-            <div className="relative flex-1 min-h-[500px] flex flex-col rounded-2xl bg-black/40 border border-artichoke/20 overflow-hidden group focus-within:border-cranberry/50 transition-colors duration-500">
-              
-              <textarea
-                value={postText}
-                onChange={(e) => setPostText(e.target.value)}
-                placeholder="Enter your video title here..."
-                className="flex-1 w-full bg-transparent resize-none p-6 text-xl outline-none placeholder:text-artichoke/50 font-medium min-h-[150px]"
+      <div className="max-w-7xl mx-auto px-6 pt-10 pb-24 space-y-10 w-full">
+
+        {/* ── Page header ─────────────────── */}
+        <div className="space-y-1">
+          <h1 className="font-heading text-5xl md:text-6xl leading-tight text-emerald">
+            Virality{" "}
+            <em className="not-italic italic text-emerald/30">Engine</em>
+          </h1>
+          <p className="text-emerald/30 text-xs uppercase tracking-[0.2em] font-mono">
+            PyTorch · SBERT · CLIP · LLaVA · Llama 3
+          </p>
+        </div>
+
+        {/* ── Main 2-col grid ─────────────── */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-10 items-start">
+
+          {/* ─ LEFT: Input panel ─────────── */}
+          <div className="space-y-5">
+            <p className="text-[10px] uppercase tracking-widest text-emerald/30 font-mono">
+              01 — Input Signal
+            </p>
+
+            {/* Title */}
+            <div>
+              <label className="block text-[10px] font-mono uppercase tracking-widest text-emerald/35 mb-2">
+                Video Title
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                placeholder="50 Hours Surviving In Solitary Confinement..."
+                className={inputCls}
               />
-              
-              <div className="px-6 pb-6 pt-2">
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  onChange={handleFileInput} 
-                  accept="image/png, image/jpeg" 
-                  className="hidden" 
-                />
-                
-                {!previewUrl ? (
-                  <div 
-                    onClick={() => fileInputRef.current?.click()}
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    className={`w-full border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 ${
-                      isDragging 
-                        ? "border-cranberry bg-cranberry/10" 
-                        : "border-artichoke/30 hover:border-cranberry/50 hover:bg-black/20"
-                    }`}
-                  >
-                    <ImagePlus className={`w-8 h-8 mb-3 transition-colors ${isDragging ? "text-cranberry" : "text-artichoke"}`} />
-                    <span className="text-sm font-mono text-artichoke uppercase tracking-widest text-center">
-                      {isDragging ? "Drop to engage" : "Drop thumbnail or click to upload"}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="relative inline-block w-full">
-                    <div className="w-full h-48 rounded-xl border border-artichoke/30 overflow-hidden relative group/preview">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img 
-                        src={previewUrl} 
-                        alt="Thumbnail Preview" 
-                        className="w-full h-full object-cover opacity-90 transition-opacity group-hover/preview:opacity-100" 
-                      />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                        <span className="font-mono text-xs uppercase tracking-widest text-mashed-potatoes">Image Loaded</span>
-                      </div>
-                    </div>
-                    <button 
-                      onClick={clearFile}
-                      className="absolute -top-3 -right-3 w-8 h-8 bg-cabernet hover:bg-cranberry text-mashed-potatoes rounded-full flex items-center justify-center shadow-lg transition-colors border border-cranberry/50"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
-              </div>
-              
-              <div className="p-4 bg-black/60 border-t border-artichoke/20 flex items-center justify-between mt-auto shrink-0 relative z-0">
-                <span className="text-xs text-artichoke font-mono">
-                  {postText.length} chars {selectedFile && "• +1 Image"}
+            </div>
+
+            {/* Hook */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-[10px] font-mono uppercase tracking-widest text-emerald/35">
+                  Script Hook
+                </label>
+                <span className={`text-[10px] font-mono ${hookWords >= 140 ? "text-burgundy" : "text-emerald/25"}`}>
+                  {hookWords}/150 words
                 </span>
-                <button
-                  onClick={handlePredict}
-                  disabled={loading || (!postText.trim() && !selectedFile)}
-                  className="flex items-center gap-2 px-6 py-3 bg-mashed-potatoes text-green-bean rounded-md font-semibold uppercase tracking-wider text-sm hover:bg-cranberry hover:text-mashed-potatoes transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-mashed-potatoes disabled:hover:text-green-bean"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4" />
-                      Run Engine
-                    </>
-                  )}
-                </button>
+              </div>
+              <textarea
+                value={hook}
+                onChange={handleHookChange}
+                placeholder="The first 150 words of your script — what makes the viewer stay..."
+                rows={5}
+                className={`${inputCls} resize-none leading-relaxed`}
+              />
+            </div>
+
+            {/* Entities */}
+            <div>
+              <label className="block text-[10px] font-mono uppercase tracking-widest text-emerald/35 mb-2">
+                Featured Entities{" "}
+                <span className="text-emerald/20 normal-case">(optional — e.g. &ldquo;Mr Beast, IShowSpeed&rdquo;)</span>
+              </label>
+              <div className="relative">
+                <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald/25" />
+                <input
+                  type="text"
+                  value={entities}
+                  onChange={e => setEntities(e.target.value)}
+                  placeholder="Influencers, meme icons, or cultural figures in your video..."
+                  className={`${inputCls} pl-11`}
+                />
               </div>
             </div>
 
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                className="mt-4 p-4 rounded-lg bg-cabernet/80 border border-cabernet text-mashed-potatoes flex items-start gap-3"
-              >
-                <Activity className="w-5 h-5 text-cranberry shrink-0" />
-                <div>
-                  <p className="font-semibold text-sm">Prediction Failed</p>
-                  <p className="text-xs opacity-80">{error}</p>
+            {/* Thumbnail */}
+            <div>
+              <label className="block text-[10px] font-mono uppercase tracking-widest text-emerald/35 mb-2">
+                Thumbnail
+              </label>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileInput}
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+              />
+
+              {!previewUrl ? (
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={`w-full border-2 border-dashed rounded-xl p-10 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 ${
+                    isDragging
+                      ? "border-burgundy bg-burgundy/5"
+                      : "border-emerald/15 hover:border-emerald/30 hover:bg-emerald/[0.02]"
+                  }`}
+                >
+                  <ImagePlus className={`w-8 h-8 mb-3 transition-colors ${isDragging ? "text-burgundy" : "text-emerald/25"}`} />
+                  <span className="text-xs font-mono text-emerald/35 uppercase tracking-widest text-center">
+                    {isDragging ? "Drop to engage" : "Drop thumbnail or click to upload"}
+                  </span>
+                  <span className="text-[10px] text-emerald/20 mt-1">JPG · PNG · WEBP</span>
                 </div>
-              </motion.div>
+              ) : (
+                <div className="relative w-full rounded-xl border border-emerald/15 overflow-hidden group/thumb">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={previewUrl} alt="Thumbnail preview" className="w-full h-52 object-cover" />
+                  <div className="absolute inset-0 bg-charcoal/50 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="font-mono text-xs uppercase tracking-widest text-cream/70">
+                      Click × to replace
+                    </span>
+                  </div>
+                  <button
+                    onClick={clearFile}
+                    className="absolute top-3 right-3 w-8 h-8 rounded-full bg-charcoal/80 hover:bg-burgundy flex items-center justify-center transition-colors border border-cream/10"
+                  >
+                    <X className="w-4 h-4 text-cream" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Error */}
+            {error && (
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-burgundy/10 border border-burgundy/25">
+                <AlertTriangle className="w-4 h-4 text-burgundy shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-semibold text-burgundy font-mono uppercase tracking-wide">Engine Error</p>
+                  <p className="text-xs text-emerald/55 mt-0.5">{error}</p>
+                </div>
+              </div>
             )}
-          </section>
 
-          <section className="flex flex-col h-full relative z-0">
-            <h2 className="font-heading text-4xl mb-2 text-artichoke">Telemetry <span className="italic">Output</span></h2>
-            <p className="text-artichoke mb-8 text-sm uppercase tracking-widest">Awaiting multi-modal processing...</p>
-
-            <AnimatePresence mode="wait">
-              {!loading && !result && (
-                  <motion.div 
-                    key="idle"
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className="flex-1 rounded-2xl border border-dashed border-artichoke/30 flex items-center justify-center text-artichoke/50 flex-col gap-4 min-h-[500px]"
-                  >
-                    <Activity className="w-12 h-12 mb-2 opacity-20" />
-                    <p className="font-mono text-sm uppercase tracking-widest">Standing by for raw data.</p>
-                  </motion.div>
+            {/* Submit */}
+            <button
+              onClick={handleAnalyze}
+              disabled={!canSubmit}
+              className="w-full flex items-center justify-center gap-3 py-4 rounded-xl font-semibold uppercase tracking-wider text-xs transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed bg-burgundy hover:bg-charcoal active:scale-[0.98] text-cream"
+            >
+              {loading ? (
+                <><Loader2 className="w-4 h-4 animate-spin" />{phase || "Processing..."}</>
+              ) : (
+                <><Send className="w-4 h-4" />Run Engine</>
               )}
+            </button>
+          </div>
 
-              {loading && (
-                  <motion.div
-                    key="loading"
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className="flex-1 rounded-2xl border border-artichoke/20 bg-black/30 flex items-center justify-center flex-col gap-6 min-h-[500px]"
-                  >
-                    <div className="relative">
-                      <div className="w-16 h-16 border-4 border-artichoke/20 rounded-full" />
-                      <div className="w-16 h-16 border-4 border-cranberry rounded-full border-t-transparent animate-spin absolute top-0 left-0" />
+          {/* ─ RIGHT: Output panel ────────── */}
+          <div className="space-y-5">
+            <p className="text-[10px] uppercase tracking-widest text-emerald/30 font-mono">
+              02 — Telemetry Output
+            </p>
+
+            {/* Idle */}
+            {!loading && !result && (
+              <div className="flex flex-col items-center justify-center min-h-[520px] rounded-2xl border border-dashed border-emerald/12 text-emerald/20 gap-4">
+                <Activity className="w-10 h-10 opacity-30" />
+                <p className="font-mono text-xs uppercase tracking-widest">Standing by for raw data.</p>
+              </div>
+            )}
+
+            {/* Loading */}
+            {loading && !result && (
+              <div className="flex flex-col items-center justify-center min-h-[520px] rounded-2xl border border-emerald/10 bg-charcoal/[0.04] gap-6">
+                <div className="w-44 h-44">
+                  <OrbScene score={50} active={true} />
+                </div>
+                <div className="text-center space-y-2">
+                  <p className="font-mono text-xs uppercase tracking-widest text-emerald/40 animate-pulse">{phase}</p>
+                  <p className="text-[10px] text-emerald/25 font-mono">This may take 30–90 seconds on GPU</p>
+                </div>
+              </div>
+            )}
+
+            {/* Result */}
+            {result && !loading && (
+              <div className="space-y-4">
+
+                {/* Score card */}
+                <div className="relative rounded-2xl border border-emerald/12 bg-charcoal overflow-hidden">
+                  <div className="absolute right-0 top-0 w-52 h-52 opacity-50 pointer-events-none">
+                    <OrbScene score={result.final_virality_score} active={false} />
+                  </div>
+                  <div className="relative z-10 p-8">
+                    <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-cream/30 mb-5">
+                      <BarChart3 className="w-3.5 h-3.5" /> Virality Index
                     </div>
-                    <p className="font-mono text-sm uppercase text-artichoke tracking-widest animate-pulse">Running PyTorch Model...</p>
-                  </motion.div>
-              )}
-
-              {result && !loading && (
-                  <motion.div 
-                    key="success"
-                    initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ staggerChildren: 0.1 }}
-                    className="flex flex-col gap-6 h-full min-h-[500px]"
-                  >
-                    <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-black/50 rounded-2xl p-8 border border-artichoke/30 relative overflow-hidden shrink-0">
-                      <div className="absolute -right-20 -top-20 w-64 h-64 bg-cranberry/10 rounded-full blur-3xl pointer-events-none" />
-                      <div className="text-artichoke text-sm uppercase tracking-widest mb-6 flex items-center gap-2">
-                        <BarChart3 className="w-5 h-5"/> Virality Index
-                      </div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="font-heading text-[6rem] leading-none text-mashed-potatoes">
-                          {result.virality_score.toFixed(1)}
-                        </span>
-                        <span className="text-cranberry text-2xl font-bold uppercase tracking-widest">/ 100</span>
-                      </div>
-                      <div className="w-full h-2 bg-black/70 rounded-full mt-8 overflow-hidden">
-                        <motion.div 
-                          initial={{ width: 0 }} animate={{ width: `${result.virality_score}%` }} transition={{ duration: 1.2, delay: 0.3, ease: "easeOut" }}
-                          className="h-full bg-cranberry"
-                        />
-                      </div>
-                    </motion.div>
-
-                    <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-cabernet/70 rounded-2xl p-8 border border-cranberry/50 flex-1 flex flex-col relative z-10">
-                      <div className="flex items-center gap-3 mb-6 shrink-0">
-                        <div className="p-3 rounded-xl bg-cranberry/20 text-cranberry border border-cranberry/30">
-                          <BrainCircuit className="w-6 h-6" />
-                        </div>
-                        <span className="font-heading text-3xl text-mashed-potatoes flex items-center gap-3">
-                          AI Coach <Sparkles className="w-5 h-5 text-cranberry"/>
-                        </span>
-                      </div>
-                      <div className="flex-1 bg-black/40 p-6 rounded-xl border border-white/10 overflow-y-auto">
-                        <p className="text-mashed-potatoes/90 leading-relaxed text-lg">
-                          {result.ai_suggestion}
-                        </p>
-                      </div>
-                    </motion.div>
-
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="flex items-center gap-2 mt-auto pt-2 text-artichoke/60 shrink-0 relative z-10">
-                      <Cpu className="w-4 h-4" />
-                      <span className="font-mono text-xs uppercase tracking-widest">
-                        Processing Node: {result.model_version}
+                    <div className="flex items-baseline gap-2 mb-3">
+                      <span className="font-heading text-8xl leading-none text-cream tabular-nums">
+                        {result.final_virality_score.toFixed(1)}
                       </span>
-                    </motion.div>
-                  </motion.div>
-              )}
-            </AnimatePresence>
-          </section>
+                      <span className="text-gold font-semibold text-lg">/100</span>
+                    </div>
+                    <ProgressBar value={result.final_virality_score} color="bg-gold" delay={100} />
+                    <div className="mt-5 flex flex-wrap items-center gap-3">
+                      <TierBadge tier={result.entity_tier} />
+                      {result.entity_multiplier > 1 && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cream/8 border border-cream/10 text-[10px] font-mono text-cream/40 uppercase tracking-widest">
+                          <TrendingUp className="w-3 h-3" />
+                          {result.entity_multiplier}× entity boost
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mini breakdown */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-charcoal/[0.06] border border-emerald/10 p-5">
+                    <p className="text-[10px] font-mono uppercase tracking-widest text-emerald/35 mb-2">Base Score</p>
+                    <p className="text-3xl font-heading text-emerald tabular-nums">
+                      {result.base_structural_score.toFixed(1)}
+                    </p>
+                    <ProgressBar value={result.base_structural_score} color="bg-emerald/50" delay={300} />
+                  </div>
+                  <div className="rounded-xl bg-charcoal/[0.06] border border-emerald/10 p-5">
+                    <p className="text-[10px] font-mono uppercase tracking-widest text-emerald/35 mb-2">Cohesion</p>
+                    <p className="text-3xl font-heading text-emerald tabular-nums">
+                      {(result.cohesion_score * 100).toFixed(0)}
+                      <span className="text-sm text-emerald/30">%</span>
+                    </p>
+                    <ProgressBar value={result.cohesion_score * 100} color="bg-emerald/50" delay={400} />
+                    {coh && (
+                      <p className={`text-[10px] font-mono mt-2 flex items-center gap-1 ${coh.color}`}>
+                        {coh.icon} {coh.label}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Vision analysis */}
+                <div className="rounded-xl bg-charcoal/[0.06] border border-emerald/10 p-5">
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-emerald/35 mb-3 flex items-center gap-2">
+                    <Eye className="w-3.5 h-3.5" /> LLaVA Vision Analysis
+                  </p>
+                  <p className="text-sm text-emerald/65 leading-relaxed italic">
+                    &ldquo;{result.thumbnail_analysis}&rdquo;
+                  </p>
+                </div>
+
+                {/* Strategy report */}
+                <div className="rounded-xl bg-charcoal border border-cream/8 p-6 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-burgundy/20 border border-burgundy/20 text-burgundy">
+                      <BrainCircuit className="w-4 h-4" />
+                    </div>
+                    <span className="font-heading text-2xl text-cream flex items-center gap-2">
+                      AI Coach <Sparkles className="w-3.5 h-3.5 text-gold" />
+                    </span>
+                  </div>
+
+                  {parsedReport.length > 0 ? (
+                    <div className="space-y-3">
+                      {parsedReport.slice(0, 3).map((section, i) => (
+                        <div key={i} className="flex gap-3 bg-cream/[0.04] rounded-lg p-4">
+                          <div className="shrink-0 mt-0.5 text-gold">
+                            {reportIcons[i] ?? <ChevronRight className="w-4 h-4" />}
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-mono uppercase tracking-widest text-cream/30 mb-1">
+                              {reportLabels[i] ?? `Point ${i + 1}`}
+                            </p>
+                            <p className="text-sm text-cream/65 leading-relaxed">{section}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-cream/[0.04] rounded-lg p-4">
+                      <p className="text-sm text-cream/65 leading-relaxed whitespace-pre-line">
+                        {result.ai_strategy_report}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer meta */}
+                <div className="flex items-center gap-2 text-emerald/20 pt-1">
+                  <Cpu className="w-3 h-3" />
+                  <span className="font-mono text-[10px] uppercase tracking-widest">
+                    trendsense_core_v4.pt · CUDA · Llama 3 · LLaVA
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="relative z-10">
-          <LivePulse />
-        </div>
+        {/* ── Live Pulse ──────────────────── */}
+        <section className="relative rounded-2xl border border-emerald/10 bg-charcoal/[0.04] p-6 overflow-hidden">
+          <div className="absolute -left-20 -bottom-20 w-56 h-56 bg-burgundy/5 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-6">
+            {/* Header */}
+            <div className="flex items-center gap-4 shrink-0 md:border-r md:border-emerald/10 md:pr-6">
+              <div className="relative flex items-center justify-center">
+                <span className="absolute w-5 h-5 bg-burgundy/30 rounded-full animate-ping" />
+                <span className="w-2.5 h-2.5 bg-burgundy rounded-full relative z-10" />
+              </div>
+              <div>
+                <h3 className="font-heading text-xl text-emerald flex items-center gap-2">
+                  Live Pulse <Radio className="w-4 h-4 text-burgundy" />
+                </h3>
+                <p className="text-[10px] font-mono uppercase tracking-widest text-emerald/30 mt-0.5">
+                  Trending Entity Radar
+                </p>
+              </div>
+            </div>
+
+            {/* Trend badges */}
+            <div className="flex-1 flex flex-wrap gap-3">
+              {MOCK_TRENDS.map((trend, idx) => (
+                <div
+                  key={trend.id}
+                  className={`px-4 py-2 rounded-lg border flex items-center gap-3 transition-all duration-300 ${
+                    trend.isHyperViral
+                      ? "border-burgundy/35 bg-burgundy/8"
+                      : "border-emerald/10 bg-emerald/[0.03]"
+                  }`}
+                  style={{ animationDelay: `${idx * 80}ms` }}
+                >
+                  {trend.isHyperViral && (
+                    <Flame className="w-3.5 h-3.5 text-burgundy animate-pulse shrink-0" />
+                  )}
+                  <span className="text-sm font-medium text-emerald">{trend.name}</span>
+                  <span className="text-[10px] font-mono text-emerald/35 bg-emerald/5 px-2 py-0.5 rounded border border-emerald/8">
+                    {trend.post_count.toLocaleString()} posts
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
       </div>
     </main>

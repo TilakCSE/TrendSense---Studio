@@ -5,71 +5,96 @@ import { motion } from "framer-motion";
 import { Twitter, Github, Linkedin, ArrowUpRight } from "lucide-react";
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
+  const year = new Date().getFullYear();
 
   return (
-    <footer className="relative w-full bg-mashed-potatoes text-mulled-wine overflow-hidden border-t border-artichoke/20">
+    <footer className="relative w-full bg-cream text-emerald overflow-hidden border-t border-emerald/10">
       <div className="max-w-7xl mx-auto px-6 pt-24 pb-12">
 
-        {/* Top Section: Links & CTA */}
+        {/* Top grid */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 mb-24">
 
-          {/* Brand & Tagline */}
+          {/* Brand */}
           <div className="col-span-1 md:col-span-4 flex flex-col items-start">
-            <span className="font-heading text-3xl font-bold tracking-tighter text-green-bean mb-4">
+            <span className="font-heading text-3xl font-bold tracking-tighter text-emerald mb-4">
               TrendSense.
             </span>
-            <p className="text-artichoke max-w-xs text-sm leading-relaxed mb-8">
-              We don't chase trends, we engineer them. Predict the unpredictable with the ultimate AI Oracle.
+            <p className="text-emerald/45 max-w-xs text-sm leading-relaxed mb-8">
+              We don&apos;t chase trends, we engineer them. Predict the
+              unpredictable with the ultimate AI Oracle.
             </p>
             <Link
               href="/dashboard"
-              className="group flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-cranberry hover:text-cabernet transition-colors"
+              className="group flex items-center gap-2 text-xs font-mono font-semibold uppercase tracking-widest text-burgundy hover:text-emerald transition-colors"
             >
               Launch Engine
-              <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+              <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </Link>
           </div>
 
-          {/* Navigation Links */}
+          {/* Platform */}
           <div className="col-span-1 md:col-span-2 md:col-start-7">
-            <h4 className="text-xs font-mono uppercase tracking-widest text-artichoke mb-6">Platform</h4>
+            <h4 className="text-[10px] font-mono uppercase tracking-widest text-emerald/35 mb-6">
+              Platform
+            </h4>
             <ul className="space-y-4">
-              <li><Link href="/dashboard" className="text-sm font-medium hover:text-cranberry transition-colors">Neural Core</Link></li>
-              <li><Link href="/architecture" className="text-sm font-medium hover:text-cranberry transition-colors">Architecture</Link></li>
-              <li><Link href="/docs" className="text-sm font-medium hover:text-cranberry transition-colors">Documentation</Link></li>
-              <li><Link href="/team" className="text-sm font-medium hover:text-cranberry transition-colors">The Team</Link></li>
+              {["Neural Core", "Architecture", "Documentation", "The Team"].map(
+                (item) => (
+                  <li key={item}>
+                    <Link
+                      href="#"
+                      className="text-sm text-emerald/70 hover:text-burgundy transition-colors"
+                    >
+                      {item}
+                    </Link>
+                  </li>
+                )
+              )}
             </ul>
           </div>
 
+          {/* Legal */}
           <div className="col-span-1 md:col-span-2">
-            <h4 className="text-xs font-mono uppercase tracking-widest text-artichoke mb-6">Legal</h4>
+            <h4 className="text-[10px] font-mono uppercase tracking-widest text-emerald/35 mb-6">
+              Legal
+            </h4>
             <ul className="space-y-4">
-              <li><Link href="#" className="text-sm font-medium hover:text-cranberry transition-colors">Privacy Policy</Link></li>
-              <li><Link href="#" className="text-sm font-medium hover:text-cranberry transition-colors">Terms of Service</Link></li>
-              <li><Link href="#" className="text-sm font-medium hover:text-cranberry transition-colors">Data Ethics</Link></li>
+              {["Privacy Policy", "Terms of Service", "Data Ethics"].map(
+                (item) => (
+                  <li key={item}>
+                    <Link
+                      href="#"
+                      className="text-sm text-emerald/70 hover:text-burgundy transition-colors"
+                    >
+                      {item}
+                    </Link>
+                  </li>
+                )
+              )}
             </ul>
           </div>
 
-          {/* Socials */}
+          {/* Connect */}
           <div className="col-span-1 md:col-span-2">
-            <h4 className="text-xs font-mono uppercase tracking-widest text-artichoke mb-6">Connect</h4>
-            <div className="flex gap-4">
-              <a href="#" className="w-10 h-10 rounded-full border border-artichoke/30 flex items-center justify-center text-green-bean hover:bg-cranberry hover:text-mashed-potatoes hover:border-cranberry transition-all duration-300">
-                <Twitter className="w-4 h-4" />
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full border border-artichoke/30 flex items-center justify-center text-green-bean hover:bg-cranberry hover:text-mashed-potatoes hover:border-cranberry transition-all duration-300">
-                <Github className="w-4 h-4" />
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full border border-artichoke/30 flex items-center justify-center text-green-bean hover:bg-cranberry hover:text-mashed-potatoes hover:border-cranberry transition-all duration-300">
-                <Linkedin className="w-4 h-4" />
-              </a>
+            <h4 className="text-[10px] font-mono uppercase tracking-widest text-emerald/35 mb-6">
+              Connect
+            </h4>
+            <div className="flex gap-3">
+              {[Twitter, Github, Linkedin].map((Icon, i) => (
+                <a
+                  key={i}
+                  href="#"
+                  className="w-9 h-9 rounded-full border border-emerald/15 flex items-center justify-center text-emerald/50 hover:border-burgundy hover:text-burgundy transition-all duration-300"
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                </a>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Bottom Section: Massive Typography & Copyright */}
-        <div className="flex flex-col items-center border-t border-artichoke/20 pt-12">
+        {/* Wordmark + copyright */}
+        <div className="flex flex-col items-center border-t border-emerald/10 pt-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -77,18 +102,24 @@ export default function Footer() {
             transition={{ duration: 0.8 }}
             className="w-full text-center overflow-hidden mb-8"
           >
-            <h1 className="font-heading text-[12vw] leading-none tracking-tighter text-artichoke/10 select-none">
+            <h1
+              className="font-heading leading-none tracking-tighter select-none"
+              style={{
+                fontSize: "clamp(4rem, 12vw, 13rem)",
+                color: "transparent",
+                WebkitTextStroke: "1px rgba(21,66,48,0.08)",
+              }}
+            >
               TRENDSENSE
             </h1>
           </motion.div>
 
-          <div className="w-full flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-mono text-artichoke uppercase tracking-widest">
-            <p>&copy; {currentYear} TrendSense AI.</p>
+          <div className="w-full flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] font-mono text-emerald/25 uppercase tracking-widest">
+            <p>&copy; {year} TrendSense AI.</p>
             <p>Engineered for Virality.</p>
             <p>All Rights Reserved.</p>
           </div>
         </div>
-
       </div>
     </footer>
   );

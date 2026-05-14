@@ -10,8 +10,7 @@ import type {
   AnalyticsDistributionsResponse,
 } from "@/types/analytics";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://tilakcse-trendsense-api.hf.space";
-
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://localhost:8000";
 /**
  * Fetches KPI card metrics from /api/analytics/summary.
  * Revalidates every 10 minutes (matches FastAPI pulse cache TTL).

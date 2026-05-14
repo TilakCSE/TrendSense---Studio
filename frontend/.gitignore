@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+ml_cache/
+*.pt
+*.bin
+*.pth
+
+# Bulk Datasets & Images
+data/thumbnails/
+*.parquet
+data/cookies.txt

@@ -58,3 +58,13 @@ db.sqlite3-journal
 
 *.safetensors
 *.pt
+
+ml_cache/
+*.pt
+*.bin
+*.pth
+
+# Bulk Datasets & Images
+data/thumbnails/
+*.parquet
+data/cookies.txt

@@ -14,7 +14,7 @@ const pricingTiers = [
       "10 Predictions per month",
       "Standard Virality Index",
       "Basic Keyword Extraction",
-      "24-hour delayed analytics"
+      "24-hour delayed analytics",
     ],
     highlight: false,
     cta: "Start Free",
@@ -29,7 +29,7 @@ const pricingTiers = [
       "Real-time Sentiment Scoring",
       "Advanced Influence Vectors",
       "Proprietary AI Copy Suggestions",
-      "Priority API Access"
+      "Priority API Access",
     ],
     highlight: true,
     cta: "Launch Engine",
@@ -44,7 +44,7 @@ const pricingTiers = [
       "Batch URL Processing",
       "Custom Model Fine-tuning",
       "Dedicated Account Manager",
-      "White-label Reports"
+      "White-label Reports",
     ],
     highlight: false,
     cta: "Contact Sales",
@@ -52,108 +52,136 @@ const pricingTiers = [
 ];
 
 export default function Pricing() {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.2 },
-    },
+  const containerVariants: Variants = {
+    hidden:  { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
   };
 
-  const cardVariants : Variants = {
-    hidden: { opacity: 0, y: 30 },
+  const cardVariants: Variants = {
+    hidden:  { opacity: 0, y: 30 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { type: "spring", stiffness: 80, damping: 15 },
+      transition: { type: "spring", stiffness: 75, damping: 16 },
     },
   };
 
   return (
-    <section className="relative w-full py-32 px-6 bg-mashed-potatoes overflow-hidden z-10">
+    <section className="relative w-full py-32 px-6 bg-cream overflow-hidden">
+      <div className="absolute top-0 left-6 right-6 h-px bg-emerald/10" />
+
       <div className="max-w-7xl mx-auto">
-        
         {/* Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          className="text-center mb-20"
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="mb-20"
         >
-          <h2 className="font-heading text-4xl md:text-5xl text-green-bean mb-4">
-            Access the <span className="text-cranberry italic">Engine.</span>
+          <span className="text-gold text-xs uppercase tracking-[0.25em] font-mono mb-4 block">
+            Pricing
+          </span>
+          <h2 className="font-heading text-4xl md:text-5xl text-emerald leading-tight">
+            Access the{" "}
+            <em className="text-burgundy not-italic italic">Engine.</em>
           </h2>
-          <p className="text-artichoke text-lg max-w-2xl mx-auto">
+          <p className="text-emerald/55 text-lg mt-4 max-w-xl leading-relaxed">
             Choose your level of intelligence. Upgrade anytime.
           </p>
         </motion.div>
 
-        {/* Pricing Cards Grid */}
-        <motion.div 
+        {/* Cards */}
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center"
+          viewport={{ once: true, margin: "-80px" }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end"
         >
           {pricingTiers.map((tier) => (
-            <motion.div 
+            <motion.div
               key={tier.name}
               variants={cardVariants}
-              className={`relative rounded-3xl p-8 md:p-10 transition-all duration-500 hover:-translate-y-2 ${
-                tier.highlight 
-                  ? "bg-green-bean text-mashed-potatoes shadow-2xl shadow-green-bean/20 scale-105 border-none z-10 py-12" 
-                  : "bg-transparent text-mulled-wine border border-artichoke/30 hover:bg-white/50"
+              className={`relative rounded-2xl p-8 md:p-10 transition-transform duration-500 hover:-translate-y-1 ${
+                tier.highlight
+                  ? "bg-charcoal text-cream shadow-[0_30px_60px_-15px_rgba(16,17,17,0.45)] md:-mt-6 md:pb-14 z-10 border border-cream/8"
+                  : "bg-white/70 border border-emerald/12 text-emerald"
               }`}
             >
-              {/* Highlight Glow */}
+              {/* Featured label */}
               {tier.highlight && (
-                <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent rounded-3xl pointer-events-none" />
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                  <span className="bg-gold text-charcoal text-[10px] font-mono uppercase tracking-widest px-4 py-1 rounded-full">
+                    Most Popular
+                  </span>
+                </div>
               )}
 
-              <div className="relative z-10">
-                <h3 className={`font-heading text-2xl mb-2 ${tier.highlight ? "text-mashed-potatoes" : "text-cabernet"}`}>
-                  {tier.name}
-                </h3>
-                <p className={`text-sm mb-8 ${tier.highlight ? "text-mashed-potatoes/70" : "text-artichoke"}`}>
-                  {tier.description}
-                </p>
-                
-                <div className="mb-8 flex items-baseline gap-2">
-                  <span className="font-heading text-5xl tracking-tight">{tier.price}</span>
-                  <span className={`text-sm uppercase tracking-widest ${tier.highlight ? "text-cranberry" : "text-artichoke"}`}>
-                    / {tier.period}
-                  </span>
-                </div>
+              <h3
+                className={`font-heading text-2xl mb-2 ${
+                  tier.highlight ? "text-cream" : "text-emerald"
+                }`}
+              >
+                {tier.name}
+              </h3>
+              <p
+                className={`text-sm mb-8 ${
+                  tier.highlight ? "text-cream/45" : "text-emerald/45"
+                }`}
+              >
+                {tier.description}
+              </p>
 
-                <Link 
-                  href="/dashboard"
-                  className={`group relative inline-flex w-full items-center justify-center px-6 py-4 overflow-hidden rounded-sm transition-transform active:scale-95 mb-10 ${
-                    tier.highlight 
-                      ? "bg-cranberry text-mashed-potatoes hover:bg-cabernet" 
-                      : "bg-transparent border border-artichoke/50 text-mulled-wine hover:border-cabernet hover:text-cabernet"
+              {/* Price */}
+              <div className="mb-8 flex items-baseline gap-2">
+                <span className="font-heading text-5xl tracking-tight">
+                  {tier.price}
+                </span>
+                <span
+                  className={`text-xs uppercase tracking-widest ${
+                    tier.highlight ? "text-gold" : "text-emerald/40"
                   }`}
                 >
-                  <span className="relative text-sm font-semibold uppercase tracking-widest">
-                    {tier.cta}
-                  </span>
-                </Link>
+                  / {tier.period}
+                </span>
+              </div>
 
-                <div className="space-y-4">
-                  {tier.features.map((feature, idx) => (
-                    <div key={idx} className="flex items-start gap-3">
-                      <Check className={`w-5 h-5 shrink-0 ${tier.highlight ? "text-cranberry" : "text-green-bean"}`} />
-                      <span className={`text-sm ${tier.highlight ? "text-mashed-potatoes/90" : "text-mulled-wine/80"}`}>
-                        {feature}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+              {/* CTA */}
+              <Link
+                href="/dashboard"
+                className={`inline-flex w-full items-center justify-center px-6 py-3.5 rounded-sm text-xs font-semibold uppercase tracking-widest transition-all duration-300 active:scale-95 mb-10 ${
+                  tier.highlight
+                    ? "bg-burgundy text-cream hover:bg-emerald"
+                    : "bg-transparent border border-emerald/25 text-emerald hover:border-emerald hover:bg-emerald hover:text-cream"
+                }`}
+              >
+                {tier.cta}
+              </Link>
+
+              {/* Features */}
+              <div className="space-y-3.5">
+                {tier.features.map((feature, idx) => (
+                  <div key={idx} className="flex items-start gap-3">
+                    <Check
+                      className={`w-4 h-4 shrink-0 mt-0.5 ${
+                        tier.highlight ? "text-gold" : "text-emerald"
+                      }`}
+                      strokeWidth={2.5}
+                    />
+                    <span
+                      className={`text-sm ${
+                        tier.highlight ? "text-cream/70" : "text-emerald/65"
+                      }`}
+                    >
+                      {feature}
+                    </span>
+                  </div>
+                ))}
               </div>
             </motion.div>
           ))}
         </motion.div>
-
       </div>
     </section>
   );
