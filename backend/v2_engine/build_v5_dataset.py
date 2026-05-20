@@ -11,7 +11,7 @@ from transformers import CLIPProcessor, CLIPModel
 cache_dir = r"D:\Development\Projects\TrendSense---Studio\ml_cache"
 os.environ["HF_HOME"] = cache_dir
 
-print("🚀 INITIALIZING TRENDSENSE V7 (PERCENTILE RANK + BATCH GPU)...")
+print("🚀 INITIALIZING TRENDSENSE V8 (PERCENTILE RANK + BATCH GPU)...")
 
 # ==========================================
 # PATH CONFIGURATION
@@ -19,7 +19,7 @@ print("🚀 INITIALIZING TRENDSENSE V7 (PERCENTILE RANK + BATCH GPU)...")
 base_dir = os.path.dirname(os.path.abspath(__file__))
 checkpoint_dir = os.path.join(base_dir, "..", "..", "data", "checkpoints")
 thumbnail_dir  = os.path.join(base_dir, "..", "..", "data", "thumbnails")
-output_path    = os.path.join(base_dir, "..", "..", "data", "trendsense_v7_master.parquet")
+output_path    = os.path.join(base_dir, "..", "..", "data", "trendsense_v8_master.parquet")
 
 if not torch.cuda.is_available():
     raise RuntimeError(
@@ -218,9 +218,9 @@ master_df.to_parquet(output_path, index=False)
 
 vram_used = torch.cuda.memory_allocated(0) // 1024**2
 print(f"\n{'═'*60}")
-print(f"🎉 TRENDSENSE V7 DATASET SAVED!")
+print(f"🎉 TRENDSENSE V8 DATASET SAVED!")
 print(f"📁 Path:  {output_path}")
 print(f"📊 Rows:  {len(master_df)}")
 print(f"🔥 GPU VRAM used at exit: {vram_used}MB")
 print(f"{'═'*60}")
-print(f"\n⚡ NEXT STEP: Run train_trendsense.py — it will load trendsense_v7_master.parquet")
+print(f"\n⚡ NEXT STEP: Run train_trendsense.py — it will load trendsense_v8_master.parquet")

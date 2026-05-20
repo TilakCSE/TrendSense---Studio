@@ -12,9 +12,9 @@ print("🚀 INITIALIZING TRENDSENSE NEURAL FORGE V2...")
 # 1. PATH CONFIGURATION
 # ==========================================
 base_dir        = os.path.dirname(os.path.abspath(__file__))
-# Points to the new V7 dataset built with percentile rank scoring
-data_path       = os.path.join(base_dir, "..", "..", "data", "trendsense_v7_master.parquet")
-model_save_path = os.path.join(base_dir, "trendsense_core_v4.pt")
+# Points to the new V8 dataset built with percentile rank scoring
+data_path       = os.path.join(base_dir, "..", "..", "data", "trendsense_v8_master.parquet")
+model_save_path = os.path.join(base_dir, "trendsense_core_v5.pt")
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"⚙️ Training Device: {str(device).upper()}")
@@ -240,7 +240,7 @@ def train_model():
     print(f"      is biased. Ideal: both close to 50.0 with std ~25.")
     print(f"\n💾 Model saved: {model_save_path}")
     print(f"{'═'*60}")
-    print(f"\n⚡ NEXT STEP: Update api.py to load trendsense_core_v4.pt")
+    print(f"\n⚡ NEXT STEP: Update api.py to load trendsense_core_v5.pt")
 
 if __name__ == "__main__":
     train_model()

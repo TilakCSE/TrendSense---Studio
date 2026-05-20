@@ -43,7 +43,7 @@ print(f"✅ CUDA CONFIRMED: {torch.cuda.get_device_name(0)} | VRAM: {torch.cuda.
 
 # ==========================================
 # 1. NEURAL NETWORK ARCHITECTURE
-# Matches trendsense_core_v4.pt: 385→256(BN)→128(BN)→64(BN)→1
+# Matches trendsense_core_v5.pt: 385→256(BN)→128(BN)→64(BN)→1
 # ==========================================
 class ViralityPredictor(nn.Module):
     def __init__(self):
@@ -94,7 +94,7 @@ def load_models():
     print("🤖 Loading TrendSense Brain → GPU...")
     pytorch_model = ViralityPredictor().to(device)
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    pt_path = os.path.join(base_dir, "trendsense_core_v4.pt")
+    pt_path = os.path.join(base_dir, "trendsense_core_v5.pt")
     pytorch_model.load_state_dict(
         torch.load(pt_path, map_location=device, weights_only=True)
     )
@@ -274,10 +274,10 @@ Return ONLY a valid JSON object. Example: {{"tier": "A"}}"""
     print("🧠 Executing Strategic Reasoner (Llama 3 → Ollama GPU)...")
 
     cohesion_label = (
-        "EXCELLENT — thumbnail and title are strongly aligned" if cohesion >= 0.35
-        else "GOOD — solid alignment" if cohesion >= 0.28
-        else "AVERAGE — some disconnect between image and title" if cohesion >= 0.23
-        else "WEAK — thumbnail does not match the title promise" if cohesion >= 0.21
+        "EXCELLENT — thumbnail and title are strongly aligned" if cohesion >= 0.3500
+        else "GOOD — solid alignment" if cohesion >= 0.2800
+        else "AVERAGE — some disconnect between image and title" if cohesion >= 0.2375
+        else "WEAK — thumbnail does not match the title promise" if cohesion >= 0.2129
         else "STRONG CLICKBAIT — thumbnail intentionally mismatches title"
     )
 

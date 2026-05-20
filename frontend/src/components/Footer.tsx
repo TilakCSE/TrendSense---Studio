@@ -19,7 +19,7 @@ export default function Footer() {
             <span className="font-heading text-3xl font-bold tracking-tighter text-emerald mb-4">
               TrendSense.
             </span>
-            <p className="text-emerald/45 max-w-xs text-sm leading-relaxed mb-8">
+            <p className="text-emerald/50 max-w-xs text-sm leading-relaxed mb-8">
               We don&apos;t chase trends, we engineer them. Predict the
               unpredictable with the ultimate AI Oracle.
             </p>
@@ -34,58 +34,48 @@ export default function Footer() {
 
           {/* Platform */}
           <div className="col-span-1 md:col-span-2 md:col-start-7">
-            <h4 className="text-[10px] font-mono uppercase tracking-widest text-emerald/35 mb-6">
-              Platform
-            </h4>
+            <h4 className="text-[10px] font-mono uppercase tracking-widest text-emerald/35 mb-6">Platform</h4>
             <ul className="space-y-4">
-              {["Neural Core", "Architecture", "Documentation", "The Team"].map(
-                (item) => (
-                  <li key={item}>
-                    <Link
-                      href="#"
-                      className="text-sm text-emerald/70 hover:text-burgundy transition-colors"
-                    >
-                      {item}
-                    </Link>
-                  </li>
-                )
-              )}
+              {[
+                { label: "Neural Core",    href: "/dashboard" },
+                { label: "Architecture",   href: "/architecture" },
+                { label: "Documentation",  href: "/docs" },
+                { label: "The Team",       href: "/team" },
+              ].map((item) => (
+                <li key={item.label}>
+                  <Link href={item.href} className="text-sm text-emerald/65 hover:text-burgundy transition-colors">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Legal */}
           <div className="col-span-1 md:col-span-2">
-            <h4 className="text-[10px] font-mono uppercase tracking-widest text-emerald/35 mb-6">
-              Legal
-            </h4>
+            <h4 className="text-[10px] font-mono uppercase tracking-widest text-emerald/35 mb-6">Legal</h4>
             <ul className="space-y-4">
-              {["Privacy Policy", "Terms of Service", "Data Ethics"].map(
-                (item) => (
-                  <li key={item}>
-                    <Link
-                      href="#"
-                      className="text-sm text-emerald/70 hover:text-burgundy transition-colors"
-                    >
-                      {item}
-                    </Link>
-                  </li>
-                )
-              )}
+              {[
+                { label: "Privacy Policy",    href: "/legal" },
+                { label: "Terms of Service",  href: "/legal" },
+                { label: "Data Ethics",       href: "/legal" },
+              ].map((item) => (
+                <li key={item.label}>
+                  <Link href={item.href} className="text-sm text-emerald/65 hover:text-burgundy transition-colors">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Connect */}
           <div className="col-span-1 md:col-span-2">
-            <h4 className="text-[10px] font-mono uppercase tracking-widest text-emerald/35 mb-6">
-              Connect
-            </h4>
+            <h4 className="text-[10px] font-mono uppercase tracking-widest text-emerald/35 mb-6">Connect</h4>
             <div className="flex gap-3">
               {[Twitter, Github, Linkedin].map((Icon, i) => (
-                <a
-                  key={i}
-                  href="#"
-                  className="w-9 h-9 rounded-full border border-emerald/15 flex items-center justify-center text-emerald/50 hover:border-burgundy hover:text-burgundy transition-all duration-300"
-                >
+                <a key={i} href="#"
+                  className="w-9 h-9 rounded-full border border-emerald/20 flex items-center justify-center text-emerald/50 hover:border-burgundy hover:text-burgundy transition-all duration-300">
                   <Icon className="w-3.5 h-3.5" />
                 </a>
               ))}
@@ -100,21 +90,22 @@ export default function Footer() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="w-full text-center overflow-hidden mb-8"
+            className="w-full text-center overflow-hidden mb-8 select-none"
           >
-            <h1
-              className="font-heading leading-none tracking-tighter select-none"
-              style={{
-                fontSize: "clamp(4rem, 12vw, 13rem)",
-                color: "transparent",
-                WebkitTextStroke: "1px rgba(21,66,48,0.08)",
-              }}
+            {/*
+              Solid filled text at low opacity — far more visible than
+              WebkitTextStroke on a cream background. emerald/[0.13] reads
+              as a clear decorative watermark without competing with content.
+            */}
+            <span
+              className="font-heading leading-none tracking-tighter text-emerald/[0.13] block"
+              style={{ fontSize: "clamp(4rem, 12vw, 13rem)" }}
             >
               TRENDSENSE
-            </h1>
+            </span>
           </motion.div>
 
-          <div className="w-full flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] font-mono text-emerald/25 uppercase tracking-widest">
+          <div className="w-full flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] font-mono text-emerald/30 uppercase tracking-widest">
             <p>&copy; {year} TrendSense AI.</p>
             <p>Engineered for Virality.</p>
             <p>All Rights Reserved.</p>
