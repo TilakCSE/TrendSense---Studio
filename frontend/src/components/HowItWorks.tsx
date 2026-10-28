@@ -45,7 +45,7 @@ export default function HowItWorks() {
         import("gsap"),
         import("gsap/ScrollTrigger"),
       ]);
-      const gsap = gsapMod.gsap ?? gsapMod.default;
+      const gsap = gsapMod.default;
       gsap.registerPlugin(ScrollTrigger);
 
       if (!lineRef.current) return;

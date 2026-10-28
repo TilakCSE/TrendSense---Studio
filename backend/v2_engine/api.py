@@ -22,7 +22,8 @@ os.environ["OLLAMA_GPU_OVERHEAD"] = "0"
 os.environ["OLLAMA_GPU_DEVICE_IDS"] = "1"
 
 # Keep heavy models on D: Drive
-cache_dir = r"D:\Development\Projects\TrendSense---Studio\ml_cache"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+cache_dir = os.path.join(BASE_DIR, "..", "ml_cache")
 os.environ["HF_HOME"] = cache_dir
 
 from sentence_transformers import SentenceTransformer
@@ -81,7 +82,7 @@ def load_models():
     print(f"⚙️ Waking up Compute Device: {device.upper()} ({torch.cuda.get_device_name(0)})")
 
     print("🧠 Loading SBERT → GPU...")
-    sbert_model = SentenceTransformer('all-MiniLM-L6-v2', device=device)
+    sbert_model = SentenceTransformer('all-MiniLM-L6-v2', device="cpu")
 
     print("🖼️ Loading CLIP → GPU...")
     clip_model = CLIPModel.from_pretrained(
@@ -137,6 +138,13 @@ def free_cuda_cache():
     torch.cuda.empty_cache()
     torch.cuda.synchronize()
 
+OLLAMA_OPTIONS = {"num_ctx": 2048}
+
+def ollama_message_content(response) -> str:
+    """Support both the dictionary and typed response returned by Ollama SDK versions."""
+    message = response.get("message") if isinstance(response, dict) else response.message
+    return message.get("content", "") if isinstance(message, dict) else message.content
+
 def letterbox_image(image: Image.Image, target_size=(224, 224)) -> Image.Image:
     """
     Pad to square before CLIP resize — preserves 16:9 aspect ratio.
@@ -148,9 +156,14 @@ def letterbox_image(image: Image.Image, target_size=(224, 224)) -> Image.Image:
     square.paste(image, ((max_dim - width) // 2, (max_dim - height) // 2))
     return square.resize(target_size, Image.Resampling.LANCZOS)
 
-def ollama_with_timeout(model: str, messages: list, timeout: int = 120):
+def ollama_with_timeout(model: str, messages: list, timeout: int = 120, options: dict | None = None):
     with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-        future = executor.submit(ollama.chat, model=model, messages=messages)
+        future = executor.submit(
+            ollama.chat,
+            model=model,
+            messages=messages,
+            options=options or OLLAMA_OPTIONS,
+        )
         try:
             return future.result(timeout=timeout)
         except concurrent.futures.TimeoutError:
@@ -212,7 +225,7 @@ async def analyze_video(
     print("👁️ Executing Vision Engine (LLaVA → Ollama GPU)...")
     try:
         vision_res = ollama_with_timeout(
-            model='llava',
+            model='llava:7b-v1.6-mistral-q2_K',
             messages=[{
                 'role': 'user',
                 'content': (
@@ -224,43 +237,59 @@ async def analyze_video(
             }],
             timeout=120
         )
-        thumbnail_desc = vision_res['message']['content']
+        thumbnail_desc = ollama_message_content(vision_res)
         print(f"   ↳ Vision OK: {thumbnail_desc[:80]}...")
     except Exception as e:
         print(f"❌ LLaVA ERROR: {str(e)}")
         thumbnail_desc = "Could not analyze image."
 
     # ------------------------------------------
-    # PHASE 3: CULTURE ENGINE (Llama 3)
+    # PHASE 3: CULTURE ENGINE (Qwen 2.5 3B)
     # ------------------------------------------
-    print("🌐 Executing Culture Engine (Llama 3 → Ollama GPU)...")
+    print("🌐 Executing Culture Engine (Qwen 2.5 3B → Ollama)...")
 
     entity_multiplier = 1.0
     entity_tier = "None"
 
     if user_entities.strip():
         print(f"🔍 Analyzing User Entities: {user_entities}")
-        zeitgeist_prompt = f"""You are a YouTube Culture Expert. The user claims these entities are in their video: "{user_entities}".
-Rank the current internet virality/hype of these entities on this exact scale:
-"S" = Global Megastars (e.g., MrBeast, Cristiano Ronaldo, Elon Musk)
-"A" = Massive Internet Culture/Meme icons (e.g., IShowSpeed, Kai Cenat, Samay Raina)
-"B" = Niche/Growing popularity (e.g., specific anime, standard vloggers, emerging TikTok trends)
-"None" = Unknown or zero hype.
+        zeitgeist_prompt = f"""
+You are an internet culture analyst specializing in:
+- YouTube virality
+- Indian meme culture
+- Gen-Z internet trends
+- influencer popularity
+- social media hype cycles
 
-Return ONLY a valid JSON object. Example: {{"tier": "A"}}"""
+The user claims these entities appear in the video:
+"{user_entities}"
+
+Classify their CURRENT internet virality level.
+
+Rules:
+- "S" = globally dominant internet figures or trends
+- "A" = highly viral internet personalities/trends
+- "B" = niche but growing online popularity
+- "None" = minimal or no internet hype
+
+Respond ONLY with valid JSON.
+
+Example:
+{{"tier":"A"}}
+"""
 
         try:
             res = ollama_with_timeout(
-                model='llama3',
+                model='qwen2.5:3b',
                 messages=[{'role': 'user', 'content': zeitgeist_prompt}],
                 timeout=90
             )
-            result_json = safe_parse_json(res['message']['content'])
+            result_json = safe_parse_json(ollama_message_content(res))
             entity_tier = result_json.get("tier", "None")
 
-            if entity_tier == "S":   entity_multiplier = 1.8
-            elif entity_tier == "A": entity_multiplier = 1.58
-            elif entity_tier == "B": entity_multiplier = 1.32
+            if entity_tier == "S":   entity_multiplier = 2.5
+            elif entity_tier == "A": entity_multiplier = 2.1
+            elif entity_tier == "B": entity_multiplier = 1.8
 
             print(f"📈 Entity Tier: {entity_tier} | Applying {entity_multiplier}x Multiplier")
         except Exception as e:
@@ -269,9 +298,9 @@ Return ONLY a valid JSON object. Example: {{"tier": "A"}}"""
     final_score = round(min(100.0, base_score * entity_multiplier), 1)
 
     # ------------------------------------------
-    # PHASE 4: CONSULTANT (Llama 3)
+    # PHASE 4: CONSULTANT (Qwen 2.5 3B)
     # ------------------------------------------
-    print("🧠 Executing Strategic Reasoner (Llama 3 → Ollama GPU)...")
+    print("🧠 Executing Strategic Reasoner (Qwen 2.5 3B → Ollama)...")
 
     cohesion_label = (
         "EXCELLENT — thumbnail and title are strongly aligned" if cohesion >= 0.3500
@@ -281,28 +310,51 @@ Return ONLY a valid JSON object. Example: {{"tier": "A"}}"""
         else "STRONG CLICKBAIT — thumbnail intentionally mismatches title"
     )
 
-    consultant_prompt = f"""You are an elite, data-driven YouTube Strategist.
+    consultant_prompt = f"""
+You are a senior YouTube virality strategist.
 
-Video Title: {title}
-Predicted Virality Score: {final_score}/100 (Base Score: {base_score:.1f}, Entity Boost: {entity_multiplier}x)
-User's Highlighted Entities: {user_entities if user_entities else 'None'}
-Viral Hook: {hook}
-Thumbnail Description (from Vision AI): {thumbnail_desc}
-Thumbnail Cohesion Score: {cohesion:.4f}/1.0
-Cohesion Classification (PRE-COMPUTED BY CLIP — accept as ground truth): {cohesion_label}
+Analyze this content idea using the provided metrics.
 
-Write a direct 3-bullet-point strategy report:
-1. Score Analysis: Explain the final score. If there's a big entity boost, explain how leveraging that entity carries the video. If the base score is low, explain why the core idea needs work.
-2. Cohesion & Visuals: Treat the cohesion classification above as absolute fact. If GOOD or EXCELLENT, confirm alignment and suggest only minor polish. If WEAK or CLICKBAIT, explain the disconnect and give a specific fix.
-3. Rewrite: Give a completely rewritten, high-retention hook."""
+VIDEO TITLE:
+{title}
+
+VIRAL HOOK:
+{hook}
+
+FINAL VIRALITY SCORE:
+{final_score}/100
+
+BASE STRUCTURAL SCORE:
+{base_score:.1f}
+
+ENTITY BOOST:
+{entity_multiplier}x
+
+ENTITY TIER:
+{entity_tier}
+
+THUMBNAIL ANALYSIS:
+{thumbnail_desc}
+
+THUMBNAIL-TITLE COHESION:
+{cohesion_label}
+
+Write EXACTLY 3 concise bullet points:
+
+1. Explain why the score is high or low.
+2. Explain whether the thumbnail/title alignment helps or hurts CTR.
+3. Rewrite the hook to maximize retention and curiosity.
+
+Keep the tone direct, strategic, and data-driven.
+"""
 
     try:
         strategy_res = ollama_with_timeout(
-            model='llama3',
+            model='qwen2.5:3b',
             messages=[{'role': 'user', 'content': consultant_prompt}],
             timeout=120
         )
-        strategy_report = strategy_res['message']['content']
+        strategy_report = ollama_message_content(strategy_res)
     except Exception as e:
         print(f"❌ REASONER ERROR: {str(e)}")
         strategy_report = "Error generating strategy."

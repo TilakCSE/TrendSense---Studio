@@ -8,7 +8,8 @@ from transformers import CLIPProcessor, CLIPModel
 
 print("🚀 INITIALIZING TRENDSENSE V4 (PURE ML BASELINE)...")
 
-cache_dir = r"D:\Development\Projects\TrendSense---Studio\ml_cache"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+cache_dir = os.path.join(BASE_DIR, "..", "ml_cache")
 os.makedirs(cache_dir, exist_ok=True)
 os.environ["HF_HOME"] = cache_dir
 

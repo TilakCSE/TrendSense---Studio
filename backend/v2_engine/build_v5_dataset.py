@@ -8,7 +8,8 @@ from sentence_transformers import SentenceTransformer
 from transformers import CLIPProcessor, CLIPModel
 
 # 🚨 THE SHIELD
-cache_dir = r"D:\Development\Projects\TrendSense---Studio\ml_cache"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+cache_dir = os.path.join(BASE_DIR, "..", "ml_cache")
 os.environ["HF_HOME"] = cache_dir
 
 print("🚀 INITIALIZING TRENDSENSE V8 (PERCENTILE RANK + BATCH GPU)...")

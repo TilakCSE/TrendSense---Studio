@@ -17,12 +17,13 @@ def extract_cultural_entities(title: str):
     """
 
     try:
-        response = ollama.chat(model='llama3', messages=[
+        response = ollama.chat(model='llama3.2:3b-instruct-q4_K_M', messages=[
             {'role': 'user', 'content': prompt}
-        ])
+        ], options={"num_ctx": 2048})
         
         # Parse the JSON response
-        result = json.loads(response['message']['content'])
+        content = response.message.content if hasattr(response, "message") else response['message']['content']
+        result = json.loads(content)
         return result
         
     except Exception as e:

@@ -253,7 +253,7 @@ export default function DashboardPage() {
             Virality <em className="not-italic italic text-emerald/20">Engine</em>
           </h1>
           <p className="text-emerald/40 text-xs uppercase tracking-[0.2em] font-mono mt-1">
-            PyTorch · SBERT · CLIP · LLaVA · Llama 3
+            PyTorch · SBERT · CLIP · LLaVA · Qwen 2.5
           </p>
         </div>
 
@@ -465,7 +465,7 @@ export default function DashboardPage() {
                   <div className="px-6 pb-5 flex items-center gap-2 text-cream/20">
                     <Cpu className="w-3 h-3" />
                     <span className="font-mono text-[10px] uppercase tracking-widest">
-                      trendsense_core_v4.pt · CUDA · Llama 3 · LLaVA
+                      trendsense_core_v5.pt · CUDA · Qwen 2.5 · LLaVA
                     </span>
                   </div>
                 </div>

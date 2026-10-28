@@ -23,13 +23,13 @@ def generate_virality_feedback(title: str, viral_hook: str, thumbnail_desc: str,
     """
 
     try:
-        response = ollama.chat(model='llama3', messages=[
+        response = ollama.chat(model='llama3.2:3b-instruct-q4_K_M', messages=[
             {
                 'role': 'user',
                 'content': prompt
             }
-        ])
-        return response['message']['content']
+        ], options={"num_ctx": 2048})
+        return response.message.content if hasattr(response, "message") else response['message']['content']
     except Exception as e:
         return f"❌ Llama 3 Engine Error: {str(e)}"
 

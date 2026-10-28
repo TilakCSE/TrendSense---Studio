@@ -1,4 +1,5 @@
 import os
+import json
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -15,6 +16,7 @@ base_dir        = os.path.dirname(os.path.abspath(__file__))
 # Points to the new V8 dataset built with percentile rank scoring
 data_path       = os.path.join(base_dir, "..", "..", "data", "trendsense_v8_master.parquet")
 model_save_path = os.path.join(base_dir, "trendsense_core_v5.pt")
+results_dir     = os.path.join(base_dir, "..", "..", "docs", "training_results")
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"⚙️ Training Device: {str(device).upper()}")
@@ -96,6 +98,18 @@ class ViralityPredictor(nn.Module):
 # 4. THE TRAINING LOOP
 # ==========================================
 def train_model():
+    if not os.path.isfile(data_path):
+        raise FileNotFoundError(
+            f"Training data not found: {data_path}. Run build_v5_dataset.py first "
+            "and make sure data/checkpoints and data/thumbnails are present."
+        )
+
+    # Use the same starting randomness for the split, initialization, and batch order.
+    torch.manual_seed(42)
+    np.random.seed(42)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(42)
+
     full_dataset = TrendSenseDataset(data_path)
 
     # 70% train / 15% val / 15% test — proper 3-way split
@@ -104,6 +118,10 @@ def train_model():
     train_n   = int(0.70 * n)
     val_n     = int(0.15 * n)
     test_n    = n - train_n - val_n
+    if train_n < 64 or val_n < 1 or test_n < 1:
+        raise ValueError(
+            f"Need at least 92 rows to create 64 training rows plus validation and test rows; found {n}."
+        )
 
     train_dataset, val_dataset, test_dataset = random_split(
         full_dataset, [train_n, val_n, test_n],
@@ -111,7 +129,8 @@ def train_model():
     )
 
     # num_workers=0 on Windows (multiprocessing with CUDA causes issues on Win)
-    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True,  num_workers=0, pin_memory=True)
+    # Drop a final one-row training batch because BatchNorm needs at least two rows.
+    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True,  num_workers=0, pin_memory=True, drop_last=True)
     val_loader   = DataLoader(val_dataset,   batch_size=64, shuffle=False, num_workers=0, pin_memory=True)
     test_loader  = DataLoader(test_dataset,  batch_size=64, shuffle=False, num_workers=0, pin_memory=True)
 
@@ -127,7 +146,7 @@ def train_model():
     # ReduceLROnPlateau: if val loss doesn't improve for 7 epochs, cut LR by 50%
     # This lets the model escape plateaus instead of bouncing around them
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode='min', patience=7, factor=0.5, verbose=True
+        optimizer, mode='min', patience=7, factor=0.5
     )
 
     # ==========================================
@@ -142,6 +161,7 @@ def train_model():
     patience_counter = 0
     PATIENCE         = 15  # Stop if no improvement for 15 epochs
     MAX_EPOCHS       = 150  # Upper ceiling — early stopping will fire before this
+    history          = []
 
     print(f"🔥 Training (max {MAX_EPOCHS} epochs, early stop patience={PATIENCE})...\n")
     print(f"{'Epoch':>6} | {'Train MAE':>9} | {'Val MAE':>7} | {'LR':>8} | {'Status'}")
@@ -173,6 +193,12 @@ def train_model():
 
         avg_val = val_loss / len(val_loader)
         current_lr = optimizer.param_groups[0]['lr']
+        history.append({
+            "epoch": epoch + 1,
+            "train_mae": avg_train,
+            "validation_mae": avg_val,
+            "learning_rate": current_lr,
+        })
 
         # --- EARLY STOPPING LOGIC ---
         if avg_val < best_val_loss:
@@ -203,7 +229,6 @@ def train_model():
     model.load_state_dict(torch.load(model_save_path, map_location=device, weights_only=True))
     model.eval()
 
-    test_loss  = 0.0
     all_preds  = []
     all_labels = []
 
@@ -211,21 +236,68 @@ def train_model():
         for batch_X, batch_y in test_loader:
             batch_X, batch_y = batch_X.to(device), batch_y.to(device)
             preds = model(batch_X)
-            test_loss += criterion(preds, batch_y).item()
             all_preds.append(preds.cpu().numpy())
             all_labels.append(batch_y.cpu().numpy())
 
-    avg_test = test_loss / len(test_loader)
     all_preds  = np.concatenate(all_preds).flatten()
     all_labels = np.concatenate(all_labels).flatten()
 
     # Additional diagnostics beyond MAE
     errors      = np.abs(all_preds - all_labels)
+    avg_test    = errors.mean()
     within_10   = (errors <= 10).mean() * 100
     within_20   = (errors <= 20).mean() * 100
     pred_mean   = all_preds.mean()
     pred_std    = all_preds.std()
     label_mean  = all_labels.mean()
+
+    # Keep the exact evaluation data with the checkpoint so results can be
+    # reproduced and graphed without inventing numbers from a different split.
+    os.makedirs(results_dir, exist_ok=True)
+    pd.DataFrame(history).to_csv(os.path.join(results_dir, "training_history.csv"), index=False)
+    pd.DataFrame({
+        "actual_score": all_labels,
+        "predicted_score": all_preds,
+        "absolute_error": errors,
+    }).to_csv(os.path.join(results_dir, "test_predictions.csv"), index=False)
+
+    results = {
+        "dataset_path": os.path.relpath(data_path, os.path.dirname(os.path.dirname(results_dir))),
+        "rows": n,
+        "split": {"train": train_n, "validation": val_n, "test": test_n, "seed": 42},
+        "best_validation_mae": round(float(best_val_loss), 4),
+        "test_mae": round(float(avg_test), 4),
+        "within_10_points_percent": round(float(within_10), 2),
+        "within_20_points_percent": round(float(within_20), 2),
+        "prediction_mean": round(float(pred_mean), 4),
+        "prediction_std": round(float(pred_std), 4),
+        "label_mean": round(float(label_mean), 4),
+        "checkpoint": os.path.relpath(model_save_path, os.path.dirname(os.path.dirname(results_dir))),
+    }
+    with open(os.path.join(results_dir, "evaluation_results.json"), "w", encoding="utf-8") as result_file:
+        json.dump(results, result_file, indent=2)
+
+    try:
+        import plotly.express as px
+
+        history_frame = pd.DataFrame(history)
+        curve = px.line(
+            history_frame, x="epoch", y=["train_mae", "validation_mae"],
+            labels={"value": "MAE (score points)", "variable": "Split"},
+            title="TrendSense training and validation MAE",
+        )
+        curve.write_html(os.path.join(results_dir, "training_curves.html"), include_plotlyjs=True)
+
+        prediction_frame = pd.DataFrame({"actual": all_labels, "predicted": all_preds})
+        scatter = px.scatter(
+            prediction_frame, x="actual", y="predicted",
+            labels={"actual": "Actual held-out score", "predicted": "Predicted score"},
+            title="TrendSense predictions on the held-out test set",
+        )
+        scatter.add_shape(type="line", x0=0, y0=0, x1=100, y1=100, line={"dash": "dash"})
+        scatter.write_html(os.path.join(results_dir, "test_predictions.html"), include_plotlyjs=True)
+    except Exception as exc:
+        print(f"⚠️ Could not write interactive graphs: {exc}")
 
     print(f"\n{'═'*60}")
     print(f"🎉 TRAINING COMPLETE — FINAL TEST RESULTS")
@@ -236,6 +308,7 @@ def train_model():
     print(f"  Within ±20 pts:        {within_20:.1f}% of predictions")
     print(f"  Prediction mean:       {pred_mean:.1f} (label mean: {label_mean:.1f})")
     print(f"  Prediction std dev:    {pred_std:.1f}")
+    print(f"  Results folder:        {results_dir}")
     print(f"\n  ⚠️  If prediction mean is far from label mean, the model")
     print(f"      is biased. Ideal: both close to 50.0 with std ~25.")
     print(f"\n💾 Model saved: {model_save_path}")

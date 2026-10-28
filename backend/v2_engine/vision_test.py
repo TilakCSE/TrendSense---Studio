@@ -13,16 +13,17 @@ def analyze_thumbnail(image_filename: str):
     
     try:
         response = ollama.chat(
-            model='llava', 
+            model='llava:7b-v1.6-mistral-q2_K',
             messages=[
                 {
                     'role': 'user',
                     'content': 'You are a YouTube thumbnail analyst. Describe exactly what is happening in this image in one highly detailed sentence. Do not add conversational filler.',
                     'images': [image_path] # Ollama reads the local file instantly!
                 }
-            ]
+            ],
+            options={"num_ctx": 2048}
         )
-        return response['message']['content']
+        return response.message.content if hasattr(response, "message") else response['message']['content']
     
     except Exception as e:
         return f"❌ LLaVA Engine Error: {str(e)}"

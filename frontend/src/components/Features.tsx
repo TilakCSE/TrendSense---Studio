@@ -41,7 +41,7 @@ export default function Features() {
         import("gsap"),
         import("gsap/ScrollTrigger"),
       ]);
-      const gsap = gsapMod.gsap ?? gsapMod.default;
+      const gsap = gsapMod.default;
       gsap.registerPlugin(ScrollTrigger);
     }
     init();

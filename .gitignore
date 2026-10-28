@@ -68,3 +68,6 @@ ml_cache/
 data/thumbnails/
 *.parquet
 data/cookies.txt
+# Keep the small checkpoint required to run the API in the project submission
+!backend/v2_engine/trendsense_core_v5.pt
+!docs/training_results/*.csv
